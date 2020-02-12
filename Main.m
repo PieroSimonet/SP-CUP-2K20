@@ -1,17 +1,21 @@
 CicleIsNotDone = true;
-old= 0;
-oldtime = clock;
+old= -1;
+i = 1;
+
 while CicleIsNotDone
-    msg = GetDataFromCurrentFrame('IMU&camera_Initial data set for abnormalities training_2 Dec 2019.bag','/mavros/imu/temperature_baro');
+    msg = GetDataFromCurrentFrame('2020-01-17-11-32-12.bag','/mavros/battery');
+    
+    data(i) = msg{i}.Voltage;
+    time(i) = i;
+    
+    RealTimePrint(data,time);
+    
     now = length(msg);
     if now == old
         CicleIsNotDone = false;
     end
     old = now;
+    i = i+1;
 end
-nowTime = clock;
-
-old
-nowTime - oldtime
 
 clear all

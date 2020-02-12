@@ -6,7 +6,7 @@ function [message] = GetDataFromCurrentFrame(fileName,topic)
     if isempty(frameNumber)
         frameNumber = 1;
     end
-
+    
     persistent oldFileName;
     persistent bagMsgs;
     if isempty(oldFileName)
@@ -21,16 +21,19 @@ function [message] = GetDataFromCurrentFrame(fileName,topic)
         bagMsgs = ros.Bag.parse(fileName);
     end
 
+
+    % I'm not sure this is correct but I like it
     deltaTime = 0.26;
 
     endTime = bagMsgs.StartTime + deltaTime * frameNumber;
-    
+
     if endTime > bagMsgs.EndTime
         endTime = bagMsgs.EndTime;
     end
     
     bagMsgs2 = select(bagMsgs, 'Time', [bagMsgs.StartTime endTime], 'Topic', topic);
-    message = readMessages(bagMsgs2);
+    message = readMessages(bagMsgs2,'DataFormat','struct');
     frameNumber = frameNumber + 1;
+
 end
 
