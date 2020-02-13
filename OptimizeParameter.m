@@ -3,9 +3,11 @@ function [] = OptimizeParameter()
 %   Detailed explanation goes here
     [hour,minute,second] = getDifferenceInTime;
     if isTooLong(hour,minute,second)
-        a = 1
+        a = "NON OK"
+        minute 
+        second
     else
-        a = 2
+        a = "OK";
     end
 end
 
