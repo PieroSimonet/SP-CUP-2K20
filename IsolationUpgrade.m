@@ -1,3 +1,15 @@
+%%INPUT:
+%Nalb=Numero di alberi all'interno della foresta
+%puntiTot: Punti Totali(massimi) dentro ogni albero
+%sk=Soglia anomalia
+%dato=Nuovo dato da aggiungere
+%
+%OUTPUT:
+%Anomalie=Vettore di identificazione anomalie
+%Datas=Matrice contenente tutti i punti attualemnte nella foresta
+%h=Vettore delle altezze
+%s=Vettore indice di anomalie
+
 function [Anomalie,Datas, h, s]=IsolationUpgrade(Nalb,puntiTot,sk,dato)
     persistent Data;
     persistent idx;
@@ -18,7 +30,7 @@ function [Anomalie,Datas, h, s]=IsolationUpgrade(Nalb,puntiTot,sk,dato)
     end
     idx=idx+1;
     Data(idx,:)=dato;%inserisce il nuovo dato
-    Datas=Data;
+    Datas=Data(1:idx,:);
     Forest = IsolationForest(Data(1:idx,:), NumTree, NumSub);
     [Anomalie,h,s]= RicecaAnomalie(Forest,idx,sk);
     
