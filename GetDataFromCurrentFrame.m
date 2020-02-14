@@ -23,7 +23,7 @@ function [message] = GetDataFromCurrentFrame(fileName,topic)
 
 
     % I'm not sure this is correct but I like it
-    deltaTime = 0.26;
+    deltaTime = 0.30;
 
     endTime = bagMsgs.StartTime + deltaTime * frameNumber;
 
