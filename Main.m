@@ -6,10 +6,15 @@ OptimizeParameter();
 while CicleIsNotDone
     msg = GetDataFromCurrentFrame('2020-01-17-11-32-12.bag','/mavros/battery');
     
-    data(i) = msg{i}.Voltage;
+    data{1}(i) = msg{i}.Voltage;
+    data{2}(i) = msg{i}.Current;
+
+    lol{1}(i) = msg{i}.Voltage;
+    
     time(i) = i;
     
-    RealTimePrint(data,time);
+    RealTimePrint(data,time,1);
+    RealTimePrint(lol,time,2);
     
     now = length(msg);
     if now == old
@@ -21,5 +26,7 @@ while CicleIsNotDone
     % precendete
     OptimizeParameter();
 end
+
+old
 
 clear all
