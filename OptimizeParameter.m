@@ -21,6 +21,18 @@ function [hour,minute,second] = getDifferenceInTime()
     hour    = diff(4);
     minute  = diff(5);
     second  = diff(6);
+
+    % MATLAB è lezzo
+    if second < 0
+        second = 60 + second;
+        minute = minute - 1;
+    end
+
+    if minute < 0
+        minute = 60 - minute;
+        hour = hour - 1;
+    end
+
     oldTime = clock;
 end
 
