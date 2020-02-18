@@ -41,11 +41,11 @@ y = y + noise;
 %% Variabili ricerca picchi
 
 degree = 2;
-gap = 0.5;
+gap = 0.2;
 num = 20;
 
 % amps_peak -> ampiezza picchi anomali
-amp_peaks = 1;
+amp_peaks = 1.2;
 
 %% Ricerca anomalia - inizializzazioni vettori
 % Attenzione necessiti un numero di elementi iniziali >degree+1
@@ -62,14 +62,14 @@ forest = zeros(rows,2*degree+1);
 % when -> elementi in cui inseriamo l'anomalia
 when = [];
 
-% sigma3d -> precisione 3d della sitima parametrica
-sigma3d  = zeros(rows,2*degree+1);
-
 % var_forest -> varianza foresta
 var_forest = [0; zeros(rows, 1)];
 
 % sigma_forest -> elementi var_forest in array
 sigma_forest = zeros(rows+1,2*degree+1);
+
+% calc -> vettore dei valori calcolati
+calc = zeros(rows,2*degree+1);
 
 %% Ricerca anomalia
 
@@ -83,7 +83,7 @@ for i=2*degree+2:length(t)
    
     % Aggiunta di anomalie manualmente
     if randn(1,1)>2.6
-        y1(:,i) = y1(:,i).*(amp_peaks+0.1.*randn(rows,1));
+        y1(:,i) = y1(:,i).*(amp_peaks);%+0.1.*randn(rows,1));
         when = [when i];
     end
     
@@ -93,6 +93,7 @@ for i=2*degree+2:length(t)
     detection = [detection anomaly];
     forest = [forest, v_forest];
     sigma_forest = [sigma_forest, var_forest];
+    calc = [calc, v_calc];
     
     % Inserimento del punto predetto nel grafico -> rosso
     if  not(isempty(when))&&((when(length(when))-i)==0)
@@ -111,9 +112,12 @@ plot3(y1(1,when),y1(2,when),y1(3,when),'+g');
 % errori -> indice delle possibili anomalie
 errori = find(detection)
 
+y1(:,errori)
+calc(:,errori)
+
 %forest
 forest(:,errori)
-sigma_forest(:,errori)
+sigma_forest(:,errori);
 
 %% Grafici
 

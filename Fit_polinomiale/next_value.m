@@ -37,8 +37,9 @@ function [anomaly, v_forest, v_calc, var_forest] = next_value(time, value, pol, 
     
     % Verifica presenza anomalia
     
-    [anomaly, var_forest] = range_peak(v_forest, value, gap, sigma, var_forest);
-    
     v_calc = v_forest + value;
+    
+    [anomaly, var_forest] = range_peak(v_forest, v_calc, gap, sigma, var_forest);
+    
     
 end
