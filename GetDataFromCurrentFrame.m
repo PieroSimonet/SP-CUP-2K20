@@ -1,4 +1,4 @@
-function [message] = GetDataFromCurrentFrame(fileName,topic)
+function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber)
 %GETCURRENTFRAME Get the current topic information from the rosbag file
 %   More info here
 
@@ -33,7 +33,10 @@ function [message] = GetDataFromCurrentFrame(fileName,topic)
     
     bagMsgs2 = select(bagMsgs, 'Time', [bagMsgs.StartTime endTime], 'Topic', topic);
     message = readMessages(bagMsgs2,'DataFormat','struct');
-    frameNumber = frameNumber + 1;
+    
+    if toUpdateFrameNumber
+        frameNumber = frameNumber + 1;
+    end
 
 end
 
