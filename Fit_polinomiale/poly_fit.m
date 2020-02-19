@@ -1,13 +1,13 @@
 %% Input
 
-% vect      - vettore dei valori (già ridotto)              [double[]]
-% t_n       - vettore dei tempi (già ridotto)               [double[]]
+% vect      - vettore dei valori (length(vect) <= num)      [double[]]
+% t_n       - vettore dei tempi (length(vect) <= num)       [double[]]
 % degree    - grado fit polinomiale                         [int]
 
 %% Output
 
-% pol - coefficienti grado  [double[]]
-% S - vettore precisione    [double[]]
+% pol   - coefficienti grado        [double[]]
+% S     - vettore errori polyfit    [double[]]
 
 %% Function
 

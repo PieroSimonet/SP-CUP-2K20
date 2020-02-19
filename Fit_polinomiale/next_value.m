@@ -1,22 +1,22 @@
 %% Input
 
-% time          - ultimo istante                                        [double]
-% value         - valore rilevati nell'ultimo istante                   [double[]]
-% pol           - coefficienti grado                                    [double[]]
-% S             - vettore precisione                                    [double[]]
-% gap           - intervallo per non identificare un picco [%]          [double]
-% var_forest    - varianza degli errori fra polyfit e valore misurato   [double[]]
+% time          - ultimo istante                                [double]
+% value         - valore rilevati nell'ultimo istante           [double[]]
+% pol           - coefficienti grado                            [double[]]
+% S             - vettore errori polyfit                        [double[]]
+% gap           - percentuale per non identificare un picco     [double]
+% varp_forest   - variazione percentuale media foresta          [double[]]
 
 %% Output
 
-% anomaly       - presenza dell'anomalia        [boolean]
-% v_forest      - valore per la foresta         [double[]]
-% v_calc        - valore calcolato successivo   [double[]]
-% var_forest    - ...                           [double[]]
+% anomaly       - presenza dell'anomalia                [boolean]
+% v_forest      - valore per la foresta (errore)        [double[]]
+% v_calc        - valore calcolato dal fit polinomiale  [double[]]
+% varp_forest   - variazione percentuale media foresta  [double[]]
 
 %% Function
 
-function [anomaly, v_forest, v_calc, var_forest] = next_value(time, value, pol, S, gap, var_forest)
+function [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap, varp_forest)
     
     % rows -> numero di dimensioni
     [rows, columns] = size(value);
@@ -39,7 +39,7 @@ function [anomaly, v_forest, v_calc, var_forest] = next_value(time, value, pol, 
     
     v_calc = v_forest + value;
     
-    [anomaly, var_forest] = range_peak(v_forest, v_calc, gap, sigma, var_forest);
+    [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma, varp_forest);
     
     
 end

@@ -40,12 +40,12 @@ y = y + noise;
 
 %% Variabili ricerca picchi
 
-degree = 2;
-gap = 0.2;
-num = 20;
+degree = 4; %<- genera messaggi di warning sopra il grado 3, non genera errori nei calcoli però
+gap = 0.5;
+num = 20; %<- tenere genralmente sopra il 10
 
 % amps_peak -> ampiezza picchi anomali
-amp_peaks = 1.2;
+amp_peaks = 1.5;
 
 %% Ricerca anomalia - inizializzazioni vettori
 % Attenzione necessiti un numero di elementi iniziali >degree+1
@@ -63,9 +63,9 @@ forest = zeros(rows,2*degree+1);
 when = [];
 
 % var_forest -> varianza foresta
-var_forest = [0; zeros(rows, 1)];
+varp_forest = [0; zeros(rows, 1)];
 
-% sigma_forest -> elementi var_forest in array
+% sigma_forest -> elementi varp_forest in array
 sigma_forest = zeros(rows+1,2*degree+1);
 
 % calc -> vettore dei valori calcolati
@@ -83,17 +83,18 @@ for i=2*degree+2:length(t)
    
     % Aggiunta di anomalie manualmente
     if randn(1,1)>2.6
-        y1(:,i) = y1(:,i).*(amp_peaks);%+0.1.*randn(rows,1));
+        y1(:,i) = y1(:,i).*(amp_peaks+0.1.*randn(rows,1));
         when = [when i];
     end
     
     % Calcoli e acquisizione valori
-    [anomaly, v_forest, v_calc, var_forest] = find_peaks(t1, y1, degree, gap, num, var_forest);
+    [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t1, y1, degree, gap, num, varp_forest);
 
     detection = [detection anomaly];
     forest = [forest, v_forest];
-    sigma_forest = [sigma_forest, var_forest];
+    sigma_forest = [sigma_forest, varp_forest];
     calc = [calc, v_calc];
+    
     
     % Inserimento del punto predetto nel grafico -> rosso
     if  not(isempty(when))&&((when(length(when))-i)==0)
@@ -112,12 +113,13 @@ plot3(y1(1,when),y1(2,when),y1(3,when),'+g');
 % errori -> indice delle possibili anomalie
 errori = find(detection)
 
-y1(:,errori)
-calc(:,errori)
+valori = y1(:,errori);
+calcoli = calc(:,errori);
 
 %forest
-forest(:,errori)
+variazioni = forest(:,errori);
 sigma_forest(:,errori);
+
 
 %% Grafici
 
