@@ -1,3 +1,7 @@
+addpath('./Fit_polinomiale/');
+
+close all;
+
 run InizializeNameOfFiles.m;
 
 i = 1;
@@ -12,11 +16,17 @@ while HaveNextFrame(file1)
     
     time(i) = i;
 
-    Fit();
+    peakDetected = FindPieakWrapper(time,data{1});
+    if peakDetected
+        disp('Trovato Picco')
+    end
+
     % IsolationForest();
     KarmanFilter();
     AnomalyDetection();
     
+    
+
     RealTimePrint(data,time,1);
 
     i = i+1;
