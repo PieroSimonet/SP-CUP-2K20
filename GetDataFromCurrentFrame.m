@@ -4,7 +4,7 @@ function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber
 
     persistent frameNumber;
     if isempty(frameNumber)
-        frameNumber = 0;
+        frameNumber = 1;
     end
     
     persistent oldFileName;
@@ -27,6 +27,10 @@ function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber
     % can be optimized but this is not the time
     bagMsgs2 = select(bagMsgs, 'Time', [bagMsgs.StartTime bagMsgs.EndTime], 'Topic', topic);
     message = readMessages(bagMsgs2,'DataFormat','struct');
+
+    if length(message) < frameNumber
+        frameNumber = frameNumber - 1;
+    end
 
     message = message(1:frameNumber);
 

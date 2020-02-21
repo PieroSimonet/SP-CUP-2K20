@@ -14,7 +14,7 @@ function [hadNext] = HaveNextFrame(fileName)
 
     nowLength = length(msg);
 
-    if oldLength <= nowLength
+    if oldLength < nowLength
         hadNext = true;
         oldLength = nowLength;
     end
