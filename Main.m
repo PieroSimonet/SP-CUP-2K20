@@ -16,9 +16,11 @@ while HaveNextFrame(file1)
     
     time(i) = i;
 
-    peakDetected = FindPieakWrapper(time,data{1});
-    if peakDetected
-        disp('Trovato Picco')
+    peakDetected_V = FindPieakWrapper(time,data{1}, degree, gap, num);
+    when_V = find(peakDetected-V);
+    if ~(isempty(when_V))
+       disp('Anomalie in\n');
+       disp(num2str(when_V,'\n'));
     end
 
     % IsolationForest();
