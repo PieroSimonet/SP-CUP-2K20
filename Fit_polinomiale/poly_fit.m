@@ -15,7 +15,7 @@
 function [pol, S] = poly_fit(vect, t_n, degree)
     
     % rows -> numero di dimensioni
-    [rows, columns] = size(vect);
+    [rows, ~] = size(vect);
     
     pol = zeros(rows, degree+1);
     S = [];

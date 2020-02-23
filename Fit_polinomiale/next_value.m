@@ -5,7 +5,6 @@
 % pol           - coefficienti grado                            [double[]]
 % S             - vettore errori polyfit                        [double[]]
 % gap           - percentuale per non identificare un picco     [double]
-% varp_forest   - variazione percentuale media foresta          [double[]]
 
 %% Output
 
@@ -16,10 +15,10 @@
 
 %% Function
 
-function [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap, varp_forest)
+function [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap)
     
     % rows -> numero di dimensioni
-    [rows, columns] = size(value);
+    [rows, ~] = size(value);
     
     % Inizializzazione vettori
     v_forest = zeros(rows,1);
@@ -39,7 +38,7 @@ function [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol,
     
     v_calc = v_forest + value;
     
-    [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma, varp_forest);
+    [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma);
     
     
 end
