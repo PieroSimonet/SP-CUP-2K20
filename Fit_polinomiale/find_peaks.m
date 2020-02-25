@@ -41,9 +41,12 @@ function [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t, y, degree, gap
     vect = y(:,start:end-1);
     value = y(:,end);
     
-    % Fit
-    [pol, S] = poly_fit(vect, t_n, degree);
-    % Anomalia e vettori per isolation forest
-    [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap);
+    % PREVISIONE E CALCOLO PUNTO ATTRAVERSO POLYFIT
+    % Fit, calcolo punto successivo, valori per isolation forest
+    [v_forest, v_calc, sigma] = poly_fit_tot(vect, t_n, degree, value, time);
+    
+    % ELEMENTO STANDARD NELLA RICERCA DEL PICCO
+    % Presenza picco (+variazione percentuale media errore)
+    [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma);
 
 end

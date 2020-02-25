@@ -54,14 +54,14 @@ amp_peaks = 1.5;
 y1 = [];
 t1 = [];
 
+% when -> elementi in cui inseriamo l'anomalia
+when = [];
+
 % detection -> vettore che indica se il punto è anomalia o no
 detection = [];
 
 % forest -> vettore di elementi da inserire nella foresta
 forest = [];
-
-% when -> elementi in cui inseriamo l'anomalia
-when = [];
 
 % var_forest -> varianza foresta
 %            -> deve essere definita perchè funziona sia da input sia da output
@@ -92,7 +92,7 @@ for i=1:length(t)
     % Calcoli e acquisizione valori
     [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t1, y1, degree, gap, num);
 
-    detection = anomaly;
+    detection = [detection anomaly];
     forest = [forest, v_forest];
     sigma_forest = [sigma_forest, varp_forest];
     calc = [calc, v_calc];
