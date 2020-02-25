@@ -40,42 +40,44 @@ y = y + noise;
 
 %% Variabili ricerca picchi
 
-degree = 4; %<- genera messaggi di warning sopra il grado 3, non genera errori nei calcoli però
-gap = 0.5;
+degree = 3; %<- genera messaggi di warning sopra il grado 3, non genera errori nei calcoli però
+gap = 0.2;
 num = 20; %<- tenere genralmente sopra il 10
 
 % amps_peak -> ampiezza picchi anomali
 amp_peaks = 1.5;
 
 %% Ricerca anomalia - inizializzazioni vettori
-% Attenzione necessiti un numero di elementi iniziali >degree+1
+% Non necessita del controllo sul numero di elementi inseriti
 
-y1 = y(:,1:2*degree+1); % vettore valori
-t1 = t(1:2*degree+1); % vettore tempi
+% vettori dei valori e dei tempi
+y1 = [];
+t1 = [];
 
 % detection -> vettore che indica se il punto è anomalia o no
-detection = zeros(1,2*degree+1);
+detection = [];
 
 % forest -> vettore di elementi da inserire nella foresta
-forest = zeros(rows,2*degree+1);
+forest = [];
 
 % when -> elementi in cui inseriamo l'anomalia
 when = [];
 
 % var_forest -> varianza foresta
+%            -> deve essere definita perchè funziona sia da input sia da output
 varp_forest = [0; zeros(rows, 1)];
 
 % sigma_forest -> elementi varp_forest in array
-sigma_forest = zeros(rows+1,2*degree+1);
+sigma_forest = [];
 
 % calc -> vettore dei valori calcolati
-calc = zeros(rows,2*degree+1);
+calc = [];
 
 %% Ricerca anomalia
 
 figure
 
-for i=2*degree+2:length(t)
+for i=1:length(t)
     
     % Inserimento come se fossero sequenziali
     y1 = [y1 y(:,i)];
@@ -88,9 +90,9 @@ for i=2*degree+2:length(t)
     end
     
     % Calcoli e acquisizione valori
-    [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t1, y1, degree, gap, num, varp_forest);
+    [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t1, y1, degree, gap, num);
 
-    detection = [detection anomaly];
+    detection = anomaly;
     forest = [forest, v_forest];
     sigma_forest = [sigma_forest, varp_forest];
     calc = [calc, v_calc];

@@ -4,7 +4,6 @@
 % v_calc        - valore calcolato dal fit polinomiale                      [double[]]
 % gap           - percentuale per non identificare un picco                 [double]
 % sigma         - errore polyfit (v_calc+-sigma -> 50% valori successivi)   [double[]]
-% varp_forest   - variazione percentuale media foresta                      [double[]]
 
 %% Output
 
@@ -13,7 +12,7 @@
 
 %% Function
 
-function [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma, varp_forest)
+function [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma)
     
     % Adattamento soglia in base alla precisione e al valore
     
@@ -38,7 +37,7 @@ function [anomaly, varp_forest] = range_peak(v_forest, v_calc, gap, sigma, varp_
     Sigma = (sigma.*less_1)+(sigma.*not_less_1)./v_calc_utile;
     
     % Ricalcolo varianza foresta
-    [varp_forest, varp_forest1] = calc_varp_forest(varp_forest, v_forest, v_calc_utile);
+    [varp_forest, varp_forest1] = calc_varp_forest(v_forest, v_calc_utile);
     
     % finchè sono presenti pochi casi var_forest viene tenuta a 0
     % serve ad evitare che in caso di errori iniziali la varianza della
