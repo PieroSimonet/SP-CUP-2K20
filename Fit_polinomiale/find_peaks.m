@@ -17,18 +17,14 @@
 
 function [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t, y, degree, gap, num)
     
-    % anomaly_v -> vettore di supporto contenente il vettore di anomalie
-    persistent anomaly_v;
-    
     % controllo che il vettore non sia troppo corto
     % degree+2 -> necessario per il polyfit (es. per due punti passa una sola retta)
-    % [ SE METTIAMO degree+1 PER UN SET DI PUNTI ABBIAMO ERRORE "INFINITO" PERCHè NON HA GRADI DI LIBERTà SUPPLEMENTARI ]
+    % [ SE METTIAMO degree+1 PER UN SET DI PUNTI ABBIAMO ERRORE "INFINITO" PERCHÃ¨ NON HA GRADI DI LIBERTÃ  SUPPLEMENTARI ]
     % +1 -> necessario per capire che punto valutare
     if length(t)<degree+3
         y_fin = y(:,length(t));
         [rows, columns] = size(y_fin); 
-        anomaly_v = [anomaly_v false];
-        anomaly = anomaly_v;
+        anomaly = false;
         v_forest = zeros(rows, columns);
         v_calc = y_fin;
         varp_forest = zeros(rows+1, columns);
@@ -48,9 +44,6 @@ function [anomaly, v_forest, v_calc, varp_forest] = find_peaks(t, y, degree, gap
     % Fit
     [pol, S] = poly_fit(vect, t_n, degree);
     % Anomalia e vettori per isolation forest
-    [anomaly_p, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap);
-    
-    anomaly_v = [anomaly_v anomaly_p];
-    anomaly = anomaly_v;
+    [anomaly, v_forest, v_calc, varp_forest] = next_value(time, value, pol, S, gap);
 
 end
