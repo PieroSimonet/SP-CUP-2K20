@@ -16,15 +16,15 @@ while HaveNextFrame(file1)
     
     time(i) = i;
 
-    peakDetected_V = FindPieakWrapper(time,data{1}, degree, gap, num);
-    when_V = find(peakDetected-V);
-    if ~(isempty(when_V))
-       disp('Anomalie in\n');
-       disp(num2str(when_V,'\n'));
-    end
+   % peakDetected_V = FindPieakWrapper(time,data{1}, degree, gap, num);
+    %when_V = find(peakDetected-V);
+%     if ~(isempty(when_V))
+%        disp('Anomalie in\n');
+%        disp(num2str(when_V,'\n'));
+%     end
 
     % IsolationForest();
-    KarmanFilter();
+    KalmanFilter();
     AnomalyDetection();
     
     
