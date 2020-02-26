@@ -16,17 +16,17 @@ function [anomaly, varp_error] = range_peak(error, v_calc, gap, sigma)
     
     % Adattamento soglia in base alla precisione e al valore
     
-    % se v_calc è minore di 1 -> perc = v_forest
+    % se v_calc ï¿½ minore di 1 -> perc = v_forest
     less_1 = v_calc<1;
     not_less_1 = 1-less_1;
     
-    % se v_calc è maggiore di 100 -> perc = v_forest
+    % se v_calc ï¿½ maggiore di 100 -> perc = v_forest
     more_100 = v_calc>100;
     
     outside = less_1+more_100; % <- potrebbe non essere necessario
     inside = 1-outside; % <- potrebbe non essere necessario
     
-    % v_calc_z -> quando v_calc è zero
+    % v_calc_z -> quando v_calc ï¿½ zero
     v_calc_z = v_calc==0;
     
     % v_calc_utile -> tiene i valori diversi da zero, quelli uguali li pone a 1
@@ -39,7 +39,7 @@ function [anomaly, varp_error] = range_peak(error, v_calc, gap, sigma)
     % Ricalcolo varianza foresta
     [varp_error, varp_variation1] = calc_varp_error(error, v_calc_utile);
     
-    % finchè sono presenti pochi casi var_forest viene tenuta a 0
+    % finchï¿½ sono presenti pochi casi var_forest viene tenuta a 0
     % serve ad evitare che in caso di errori iniziali la varianza della
     % foresta, ancora molto imprecisa, infici sul risultato
     if varp_error(1,:)<10
