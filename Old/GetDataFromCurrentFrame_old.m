@@ -1,4 +1,4 @@
-function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber)
+function [message] = GetDataFromCurrentFrame_old(fileName,topic, toUpdateFrameNumber)
 %GETCURRENTFRAME Get the current topic information from the rosbag file
 %   More info here
 
@@ -9,11 +9,9 @@ function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber
     
     persistent oldFileName;
     persistent bagMsgs;
-
     if isempty(oldFileName)
         oldFileName = fileName;
         bagMsgs = ros.Bag.parse(fileName);
-        
     end
 
     % reset parameter if filename is changed
@@ -24,16 +22,18 @@ function [message] = GetDataFromCurrentFrame(fileName,topic, toUpdateFrameNumber
     end
 
 
-    % can be optimized but this is not the time
-    bagMsgs2 = select(bagMsgs, 'Time', [bagMsgs.StartTime bagMsgs.EndTime], 'Topic', topic);
-    message = readMessages(bagMsgs2,'DataFormat','struct');
+    % I'm not sure this is correct but I like it
+    deltaTime = 0.30;
 
-    if length(message) < frameNumber
-        frameNumber = frameNumber - 1;
+    endTime = bagMsgs.StartTime + deltaTime * frameNumber;
+
+    if endTime > bagMsgs.EndTime
+        endTime = bagMsgs.EndTime;
     end
-
-    message = message(1:frameNumber);
-
+    
+    bagMsgs2 = select(bagMsgs, 'Time', [bagMsgs.StartTime endTime], 'Topic', topic);
+    message = readMessages(bagMsgs2,'DataFormat','struct');
+    
     if toUpdateFrameNumber
         frameNumber = frameNumber + 1;
     end
