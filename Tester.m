@@ -1,10 +1,13 @@
 clear all;
 close all;
 
-x=rand(20,2);
-x(1,1)=3;
-
+x.a=rand(20,2);
+x.a(20,1)=3;
+x.b=rand(20,2);
 for i=1:20
-   [Anomalie, data,h, s]=IsolationUpgrade(100,20,0.6,x(i,:));
+   [last, Anomalia,posizioneA,h, s]=IsolationForest(100,20,0.7,"a",x.a(i,:));
    disp(s);
+   [last2, Anomalia2,posizioneA2,h2, s2]=IsolationForest(100,20,0.7,"b",x.b(i,:));
+   disp(s2)
 end
+
