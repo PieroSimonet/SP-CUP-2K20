@@ -40,7 +40,7 @@ y = y + noise;
 
 %% Variabili ricerca picchi
 
-degree = 3; %<- genera messaggi di warning sopra il grado 3, non genera errori nei calcoli però
+degree = 3; %<- genera messaggi di warning sopra il grado 3, non genera errori nei calcoli perï¿½
 gap = 0.2;
 num = 20; %<- tenere genralmente sopra il 10
 
@@ -54,17 +54,17 @@ amp_peaks = 1.5;
 y1 = [];
 t1 = [];
 
-% detection -> vettore che indica se il punto è anomalia o no
+% when -> elementi in cui inseriamo l'anomalia
+when = [];
+
+% detection -> vettore che indica se il punto ï¿½ anomalia o no
 detection = [];
 
 % forest -> vettore di elementi da inserire nella foresta
 forest = [];
 
-% when -> elementi in cui inseriamo l'anomalia
-when = [];
-
 % var_forest -> varianza foresta
-%            -> deve essere definita perchè funziona sia da input sia da output
+%            -> deve essere definita perchï¿½ funziona sia da input sia da output
 varp_forest = [0; zeros(rows, 1)];
 
 % sigma_forest -> elementi varp_forest in array
