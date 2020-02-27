@@ -1,34 +1,32 @@
 %%INPUT:
-%Nalb=Numero di alberi all'interno della foresta
+%Nalb: Numero di alberi all'interno della foresta
 %puntiTot: Punti Totali(massimi) dentro ogni albero
-%sk=Soglia anomalia
-%tipo=Tipo di dato aggiunto
+%sk: Soglia anomalia
+%tipo: Tipo di dato aggiunto
 %dato=Nuovo dato da aggiungere
 %
 %OUTPUT:
-%Anomalie=Vettore di identificazione anomalie
-%Datas=Matrice contenente tutti i punti attualemnte nella foresta
-%h=Vettore delle altezze
-%s=Vettore indice di anomalie
+%last: true se l'ultimo dato inserito è anomalia, 0 altrimenti
+%Anomalia: true se anomalia presente, 0 altrimenti
+%PosizioneA: Indice del dato che risulta anomalo
+%h:Vettore delle altezze medie
+%s:Vettore indice di anomalie
 
 function [last,Anomalia,posizioneA, h, s]=IsolationForest(Nalb,puntiTot,sk,tipo, dato)
     persistent Data;
-    %persistent idx;
-    %persistent Forest;
-    %campi=fields(Data);
-    %l=length(campi);
     NumTree = Nalb; % number of isolation trees
     NumSub = puntiTot; % subsample size
     if isempty(Data) %primo accesso
        Data.(tipo).idx=1;
+       idx=Data.(tipo).idx;
        [~,dim]=size(dato);
        Data.(tipo).dati=zeros(puntiTot,dim);
-       Data.(tipo).dati(Data.(tipo).idx,:)=dato;
-       Data.(tipo).forest=IsolationF(Data.(tipo).dati(1:Data.(tipo).idx,:), NumTree, NumSub);
+       Data.(tipo).dati(idx,:)=dato;
+       Data.(tipo).forest=IsolationF(Data.(tipo).dati(idx,:), NumTree, NumSub);
        h=0;
        s=0;
        Anomalie=0;
-       last=Anomalie(Data.(tipo).idx);
+       last=Anomalie(idx);
        Anomalia=any(Anomalie);
        posizioneA=find(Anomalie==1);
        return
@@ -42,23 +40,25 @@ function [last,Anomalia,posizioneA, h, s]=IsolationForest(Nalb,puntiTot,sk,tipo,
        end
        if trovato==0 %nuovo topic
            Data.(tipo).idx=1;
+           idx=Data.(tipo).idx;
            [~,dim]=size(dato);
            Data.(tipo).dati=zeros(puntiTot,dim);
-           Data.(tipo).dati(Data.(tipo).idx,:)=dato;
-           Data.(tipo).forest=IsolationF(Data.(tipo).dati(1:Data.(tipo).idx,:), NumTree, NumSub);
+           Data.(tipo).dati(idx,:)=dato;
+           Data.(tipo).forest=IsolationF(Data.(tipo).dati(idx,:), NumTree, NumSub);
            h=0;
            s=0;
            Anomalie=0;
-           last=Anomalie(Data.(tipo).idx);
+           last=Anomalie(idx);
            Anomalia=any(Anomalie);
            posizioneA=find(Anomalie==1);
            return 
        else%topi già esistente
            Data.(tipo).idx=Data.(tipo).idx+1;
-           Data.(tipo).dati(Data.(tipo).idx,:)=dato;%inserisce il nuovo dato
-           Data.(tipo).forest = IsolationF(Data.(tipo).dati(1:Data.(tipo).idx,:), NumTree, NumSub);
-           [Anomalie,h,s]= RicecaAnomalie(Data.(tipo).forest,Data.(tipo).idx,sk);
-           last=Anomalie(Data.(tipo).idx);
+           idx=Data.(tipo).idx;
+           Data.(tipo).dati(idx,:)=dato;%inserisce il nuovo dato
+           Data.(tipo).forest = IsolationF(Data.(tipo).dati(1:idx,:), NumTree, NumSub);
+           [Anomalie,h,s]= RicecaAnomalie(Data.(tipo).forest,idx,sk);
+           last=Anomalie(idx);
            Anomalia=any(Anomalie);
            posizioneA=find(Anomalie==1);
        end
