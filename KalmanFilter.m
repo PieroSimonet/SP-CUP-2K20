@@ -1,5 +1,5 @@
 function [] = KalmanFilter()
-%KARMANFILTER Summary of this function goes here
+%KALMANFILTER Summary of this function goes here
 %   Detailed explanation goes here
 end
 

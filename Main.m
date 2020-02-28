@@ -1,6 +1,7 @@
 addpath('./Fit_polinomiale/');
 
 close all;
+clear all;
 
 run InizializeNameOfFiles.m;
 
@@ -12,23 +13,19 @@ while HaveNextFrame(file1)
     msg = GetDataFromCurrentFrame(file1, batteryVoltage, false);
     
     data{1}(i) = msg{i}.Voltage;
-    data{2}(i) = msg{i}.Current;
+    % data{2}(i) = msg{i}.Current;
     
     time(i) = i;
 
-   % peakDetected_V = FindPieakWrapper(time,data{1}, degree, gap, num);
-    %when_V = find(peakDetected-V);
-%     if ~(isempty(when_V))
-%        disp('Anomalie in\n');
-%        disp(num2str(when_V,'\n'));
-%     end
+    [anomaly, v_forest, ~, ~]  = FindPeakWrapper(time,data{1}, batteryVoltage);
+    data{2} = anomaly;
+    [ ~, an, ps, ~, s] = IsolationForest( 90, 20, 0.7, "batteryVoltage" , v_forest);
+    data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
 
-    % IsolationForest();
     KalmanFilter();
-    AnomalyDetection();
+        
+    AnomalyDetection(anomaly,s,[]);
     
-    
-
     RealTimePrint(data,time,1);
 
     i = i+1;
@@ -37,4 +34,3 @@ while HaveNextFrame(file1)
     OptimizeParameter();
 end
 
-clear all
