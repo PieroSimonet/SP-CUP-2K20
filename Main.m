@@ -1,4 +1,4 @@
-addpath('./Fit_polinomiale/');
+addpath('./Find_peaks/');
 
 close all;
 clear all;
@@ -16,17 +16,23 @@ while HaveNextFrame(file1)
     % data{2}(i) = msg{i}.Current;
     
     time(i) = i;
-
-    [anomaly, v_forest, ~, ~]  = FindPeakWrapper(time,data{1}, batteryVoltage);
-    data{2} = anomaly;
-    [ ~, an, ps, ~, s] = IsolationForest( 90, 20, 0.7, "batteryVoltage" , v_forest);
-    data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
-
-    KalmanFilter();
-        
-    AnomalyDetection(anomaly,s,[]);
     
-    RealTimePrint(data,time,1);
+    degree = 2;
+    num = 20;
+    gap = 0.5;
+    gap_sva = 0.1;
+    
+    [already_analyzed, anomaly, v_forest, ~] = FindPeaksWrapper(time, data{1}, "batteryVoltage", degree, num, gap, gap_sva);
+    
+    if not(already_analyzed)
+        data{2} = anomaly;
+        [ ~, an, ps, ~, s] = IsolationForest( 90, 20, 0.7, "batteryVoltage" , v_forest);
+        data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
+        
+        AnomalyDetection(anomaly,s,[]);
+    
+        RealTimePrint(data,time,1);
+    end
 
     i = i+1;
     % Per ora segna solo la differenza di tempo tra la chiamata e la

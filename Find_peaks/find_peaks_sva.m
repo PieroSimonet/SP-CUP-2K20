@@ -9,7 +9,7 @@
 % varp_error    - percentage change of error compared to prediction         [double[]]
 % var2_error    - avarage squared variation of error composed by noise      [double[]]
 %                 and imprecision of polyval
-% gap_sva       - max variation to identify a constant                      [double]
+% gap_sva       - max variation to identify a constant element              [double]
 % Pn_1          - covariance matrix of past evaluation                      [double[]]
 % Rn            - covariance matrix of measurament errors                   [double[]]
 

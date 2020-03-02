@@ -18,13 +18,13 @@
 % var2_error    - ...
 
 %% Function
-function [anomaly, v_next, error, varp_error, var2_error] = find_peaks_general(t, y, degree, num, gap, varp_error, var2_error)
+function [anomaly, y_next, error, varp_error, var2_error] = find_peaks_general(t, y, degree, num, gap, varp_error, var2_error)
     
     % not enought elements for polyfit
     if length(t)<degree+3
         anomaly = false;
-        v_next = y(:,end);
-        error = zeros(size(v_next));
+        y_next = y(:,end);
+        error = zeros(size(y_next));
         return
     end
     
@@ -34,8 +34,8 @@ function [anomaly, v_next, error, varp_error, var2_error] = find_peaks_general(t
     y_poly = y(:,start:end);
     
     % sigma - precision of polyval evaluation [double[]]
-    [v_next, error, sigma, ~] = poly_fit(t_poly, y_poly, degree);
+    [y_next, error, sigma, ~] = poly_fit(t_poly, y_poly, degree);
     
-    [anomaly, varp_error, var2_error] = peak_presence_general(error, v_next, gap, sigma, varp_error, var2_error);
+    [anomaly, varp_error, var2_error] = peak_presence_general(error, y_next, gap, sigma, varp_error, var2_error);
     
 end
