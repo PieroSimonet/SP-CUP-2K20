@@ -8,7 +8,7 @@
 %OUTPUT:
 %last: (bool) 1 if newEl is abnormal, 0 otherwise
 %Abnormal:(bool) 1 if there are abnormalities, 0 otherwise
-%posOfAnomaly:(number vector) index of abnormal points
+%posOfAnomaly:(number vector) Index of abnormal points
 %h:(numeber vector) Average height of each point in the forest
 %s:(numeber vector) Anomaly score of each point in the forest
 
