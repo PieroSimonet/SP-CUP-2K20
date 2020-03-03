@@ -1,7 +1,7 @@
 function [] = OptimizeParameter()
 %OPTIMIZEPARAMETER Summary of this function goes here
 %   Detailed explanation goes here
-    [hour,minute,second] = getDifferenceInTime;
+    [hour,minute,second] = getDifferenceInTime();
     if isTooLong(hour,minute,second)
         a = "NON OK"
         minute 
