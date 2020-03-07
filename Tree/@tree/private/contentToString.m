@@ -30,6 +30,9 @@ function str = contentToString(content)
                 % Cell with one element -> append cell and print element
                 str = ['cell:' contentToString(content{1}) ];
                 
+            elseif isa(content,'function_handle')
+                % Function handle, lets's call it without parameters
+                str = content();
             else
                 % Scalar number -> print it
                 str = num2str(content);

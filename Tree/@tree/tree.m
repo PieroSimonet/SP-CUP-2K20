@@ -1,6 +1,6 @@
 classdef tree
 %% TREE  A class implementing a tree data structure.
-%
+% https://github.com/tinevez/matlab-tree
 % This class implements a simple tree data structure. Each node can only
 % have one parent, and store any kind of data. The root of the tree is a
 % privilieged node that has no parents and no siblings.
