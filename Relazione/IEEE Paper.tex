@@ -25,10 +25,10 @@
 
 \begin{abstract}
 In this letter, we proposed our method to solve the problem of unsupervised abnormality detection.
-It involves four main steps : peaks and abnormalities during data acquisition serch, anomaly check and system values update.
-\\The first and second steps take place at the same time during program flow but they serch autonomously the anomaly. Peaks serch is implemented with the use of polyfit and Kalman evaluation, for prediction of the measures and calcolation of the percentual change. Instead abnormalities during data acquisistion uses a modified version of the isolation forest to verify if during the measures are occurred discrepancies.
-\\ The third part leverages of the concept that if every sensor in the autonomous system reports an anomaly, it means that the behaviour is not anomaly. The anomaly check uses a tree structure to get feedback from each sensor.
-\\ The system values update is used to improve respose time and to update the variables needed in other sectios.
+It involves four main steps : peaks and abnormalities during data acquisition saerch, anomaly check and system values update.
+\\First and second steps take place at the same time during program flow but they serch autonomously the anomaly. Peaks serch is implemented with the use of polyfit and Kalman evaluation, for prediction of the measures and calculation of the percentual change. Instead abnormalities during data acquisistion uses a modified version of the isolation forest to verify if during the measures are occurred discrepancies.
+\\ The third part leverages of the concept that if every sensor in the autonomous system reports an anomaly, it means that the behavior is not anomaly. The anomaly check uses a tree structure to get feedback from each sensor.
+\\ The system values update is used to improve respose time and to update the variables needed in other sections.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -53,8 +53,8 @@ and variables update.
 For each sensor, for each new data acquisition the variation between the measure and the prediction is checked by $poly\_fit(...)$ function (it uses $polyfit(...)$ and $polyval(...)$ Matlab functions). This evaluation is done only if the number of elements to analyse is greater than degree of polyfit evaluation plus three (in the program degree plus three). This restriction is caused by the necessity of the presence of one element to verify and of degree plus two elements for $polyfit(...)$(plus two and not one because so the parametric estimation has al least a degree of freedom).
 
 \subsection{Kalman Filter}
-The Kalman filter is used only when the data are space, velocity and acceleration (angular or linear) and the acceleration is almost constant.
-The Kalman filter needs of the state transition matrix to be built (obtained from the differential equations of the model). In this case the model is a black box model thus it can't be described exactly. For these reasons the Kalman filter is used only on space, velocity and acceleration with uniform acceleration.
+The Kalman filter is used only when the cosidered data is space, velocity and acceleration (angular or linear) and the acceleration is almost constant.
+The Kalman filter needs the state transition matrix to be built (obtained from the differential equations of the model). In this case the model is a black box model thus it can't be described exactly. For these reasons the Kalman filter is used only on space, velocity and acceleration with uniform acceleration.
 The Kalman filter is used anyway because if the autonomous system makes continuous and without variations paths/movements, it will generate a more accurate evaluation than $poly\_fit$.
 The filter is activated by the evaluation of slope of regression line (the coefficient is generated inside $poly\_fit$ function).
 The covariance matrix ($Pn\_...$) is initialized as $10$\hspace{1mm}$eye(...)$ and update during subsequent cycles.
