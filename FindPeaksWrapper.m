@@ -75,7 +75,9 @@ function [already_analyzed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
     % if is already analyzed return to Main
     if anomalyArray{index,2} == length(t)
         already_analyzed = true;
-        [anomaly, error, y_next] = zeros(1,3);
+        anomaly = false;
+        error = 0;
+        y_next = 0;
         return
     end
     

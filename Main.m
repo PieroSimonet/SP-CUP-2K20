@@ -7,14 +7,36 @@ run InizializeNameOfFiles.m;
 
 i = 1;
 
-OptimizeParameter();
+numForest = OptimizeParameter( 70 );
 
-while HaveNextFrame(file1)
-    msg = GetDataFromCurrentFrame(file1, batteryVoltage, false);
+file = file2;
+
+while HaveNextFrame(file)
+
+    msgVoltage = GetDataFromCurrentFrame(file, batteryVoltage, false);
+    msgImu = GetDataFromCurrentFrame(file, imuData, false);
+    % msgBody = GetDataFromCurrentFrame(file, velocityBody, false);
+    % msgLoca = GetDataFromCurrentFrame(file, velocityLocal, false);
+    msgOdom = GetDataFromCurrentFrame(file, odom, false);
     
-    data{1}(i) = msg{i}.Voltage;
-    % data{2}(i) = msg{i}.Current;
-    
+    data{1}(i) = msgVoltage{i}.Voltage;
+
+    dataPos{1}(i) = msgOdom{i,1}.Pose.Pose.Position.X;
+    dataPos{2}(i) = msgOdom{i,1}.Pose.Pose.Position.Y;
+    dataPos{3}(i) = msgOdom{i,1}.Pose.Pose.Position.Z;
+
+    dataPos{4}(i) = msgImu{i,1}.LinearAcceleration.X;
+    dataPos{5}(i) = msgImu{i,1}.LinearAcceleration.Y;
+    dataPos{6}(i) = msgImu{i,1}.LinearAcceleration.Z;
+
+    dataAng{1}(i) = msgOdom{i,1}.Twist.Twist.Linear.X;
+    dataAng{2}(i) = msgOdom{i,1}.Twist.Twist.Linear.Y;
+    dataAng{3}(i) = msgOdom{i,1}.Twist.Twist.Linear.Z;
+
+    dataAng{4}(i) = msgImu{i,1}.AngularVelocity.X;
+    dataAng{5}(i) = msgImu{i,1}.AngularVelocity.Y;
+    dataAng{6}(i) = msgImu{i,1}.AngularVelocity.Z;
+        
     time(i) = i;
     
     degree = 2;
@@ -26,7 +48,7 @@ while HaveNextFrame(file1)
     
     if not(already_analyzed)
         data{2} = anomaly;
-        [ ~, an, ps, ~, s] = IsolationForest( 90, 20, 0.7, "batteryVoltage" , v_forest);
+        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, "batteryVoltage" , v_forest);
         data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
         
         AnomalyDetection(anomaly,s,[]);
@@ -37,6 +59,6 @@ while HaveNextFrame(file1)
     i = i+1;
     % Per ora segna solo la differenza di tempo tra la chiamata e la
     % precendete
-    OptimizeParameter();
+    numForest = OptimizeParameter( numForest );
 end
 

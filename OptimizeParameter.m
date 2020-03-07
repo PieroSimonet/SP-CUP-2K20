@@ -1,14 +1,16 @@
-function [] = OptimizeParameter()
+function [newNumForest] = OptimizeParameter(numForest)
 %OPTIMIZEPARAMETER Summary of this function goes here
 %   Detailed explanation goes here
     [hour,minute,second] = getDifferenceInTime();
     if isTooLong(hour,minute,second)
-        a = "NON OK"
-        minute 
-        second
+        disp(minute);
+        disp(second);
+        % newNumForest = round(numForest * 0.9); 
     else
-        a = "OK";
+        % newNumForest = numForest + 5;
     end
+
+    newNumForest = numForest;
 end
 
 function [hour,minute,second] = getDifferenceInTime()
@@ -38,7 +40,7 @@ end
 
 function bool = isTooLong(hour,minute,second)
     bool = false;
-    if second > 30
+    if second > 3
         bool = true;
     elseif minute > 0
         bool = true;
