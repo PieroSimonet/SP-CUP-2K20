@@ -1,24 +1,24 @@
 %% Input
-
+ 
 % error         - difference between prediction and measure             [double[]]
 % v_next        - next value (predicted)                                [double[]]
 % gap           - maximum permissible percentage error                  [double]
 % sigma         - precision of polyval evaluation                       [double[]]
 % varp_error    - percentage change of error compared to prediction     [double[]]
-% var2_error    - avarage squared variation of error                    [double[]]
+% var2_error    - average squared variation of error                    [double[]]
 %               - composed by noise and imprecision of polyval
-
+ 
 %% Output
-
-% anomaly       - presence of anomaly in v_next     [boolean]
+ 
+% anomaly       - presence of anomaly in v_next     [Boolean]
 % varp_error    - ...
 % var2_error    - ...
-
+ 
 %% Function
 function [anomaly, varp_error, var2_error] = peak_presence_general(error, v_next, gap, sigma, varp_error, var2_error)
     
     v_next_z = v_next==0;
-    % v_next with zero replaced with 1(Without Zero) (necesary for division)
+    % v_next with zero replaced with 1(Without Zero) (necessary for division)
     v_next_wz = v_next + v_next_z;
     
     % percentual error of polyval
