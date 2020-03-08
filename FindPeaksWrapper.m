@@ -9,17 +9,17 @@
 % num       - number of elements evaluating during polyfit              [int]
 % gap       - maximum permissible percentage error                      [double]
 % gap_sva   - max variation to identify a constant element              [double]
-
+ 
 %% Output
-
-% already_analyzed  - true if all values of the corresponding                   [boolean]
-%                     data_type are already analyzed
-% anomaly           - vector of all the anomaly of the corrisponding data_type  [double[]]
-% error             - error of the last element (y_measured-y_predicted)        [double[]]
-% y_next            - prediction of the last element                            [double[]]
-
+ 
+% already_analysed  - true if all values of the corresponding                   [Boolean]
+%                     data_type are already analysed
+% anomaly           - vector of all the anomaly of the corresponding data_type  [Boolean[]]
+% error             - error of not evaluated elements (y_measured-y_predicted)  [double[]]
+% y_next            - prediction of not evaluated elements                      [double[]]
+ 
 %% Function
-function [already_analyzed, anomaly, error, y_next] = FindPeaksWrapper(t, y, data_type, degree, num, gap, gap_sva)
+function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, data_type, degree, num, gap, gap_sva)
     
     persistent dataType;
     persistent anomalyArray;
@@ -46,7 +46,7 @@ function [already_analyzed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
         end
     end
     
-    already_analyzed = false;
+    already_analysed = false;
     index = 0;
     
     for i=1:length(dataType)
@@ -72,32 +72,39 @@ function [already_analyzed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
         end
     end
     
-    % if is already analyzed return to Main
+    % if is already analysed return to Main
     if anomalyArray{index,2} == length(t)
-        already_analyzed = true;
+        already_analysed = true;
         anomaly = false;
         error = 0;
         y_next = 0;
         return
     end
     
+    % initialization (increase efficiency)
+    [rows, ~] = size(y);
+    error = zeros(rows,length(t)-anomalyArray{index,2});
+    y_next = zeros(rows,length(t)-anomalyArray{index,2});
+    
     % Update variables and calc of y_next, error and anomaly
     for i= (anomalyArray{index,2}+1):length(t)
         
         if (dataType{index} == "sva_l")||(dataType{index} == "sva_a")
-            % find peaks with Kalman filter (specific calc in particular cases)
-            [anomaly_tmp, y_next, error, var{index,1}, var{index,2}, matrix{index,1}] = find_peaks_sva(t, y, degree, num, gap, var{index,1}, var{index,2}, gap_sva, matrix{index,1}, matrix{index,2});
+            % find peaks with Kalman filter (specific calc cases)
+            [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}, matrix{index,1}] = find_peaks_sva(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2}, gap_sva, matrix{index,1}, matrix{index,2});
         else
             % find peaks without Kalman filter (no specific model)
-            [anomaly_tmp, y_next, error, var{index,1}, var{index,2}] = find_peaks_general(t, y, degree, num, gap, var{index,1}, var{index,2});
+            [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}] = find_peaks_general(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2});
         end
         anomalyArray{index,1} = [anomalyArray{index,1} anomaly_tmp];
+        anomalyArray{index,1} = [anomalyArray{index,1} anomaly_tmp];
+        error(:,i-anomalyArray{index,2}) = error_tmp;
+        y_next(:,i-anomalyArray{index,2}) = y_next_tmp;
     end
     
     % update number of verify elements
     anomalyArray{index,2} = length(t);
-
+ 
     anomaly = anomalyArray{index,1};
-
+ 
 end
-
