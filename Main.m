@@ -1,10 +1,28 @@
-CicleIsNotDone = true;
-old= -1;
+addpath('./Find_peaks/');
+addpath('./Tree/');
+addpath('./Tree/Utils/');
+
+close all;
+clear all;
+
+run InizializeNameOfFiles.m;
+
 i = 1;
 
-OptimizeParameter();
-while CicleIsNotDone
-    msg = GetDataFromCurrentFrame('2020-01-17-11-32-12.bag','/mavros/battery');
+numForest = OptimizeParameter( 70 );
+
+file = file2;
+
+while HaveNextFrame(file)
+
+    msgVoltage = GetDataFromCurrentFrame(file, batteryVoltage, false);
+    msgImu = GetDataFromCurrentFrame(file, imuData, false);
+    % msgBody = GetDataFromCurrentFrame(file, velocityBody, false);
+    % msgLoca = GetDataFromCurrentFrame(file, velocityLocal, false);
+    msgOdom = GetDataFromCurrentFrame(file, odom, false);
+
+    % Push data to trees
+    [t1,t2,t3] = PushTrees(msgImu{i,1}, msgOdom{i,1},true);
     
     data{1}(i) = msg{i}.Voltage;
     data{2}(i) = msg{i}.Current;
