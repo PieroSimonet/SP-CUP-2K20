@@ -1,0 +1,162 @@
+\documentclass[journal]{IEEEtran}
+
+\ifCLASSINFOpdf
+\else
+\usepackage[dvips]{graphicx}
+\fi
+\usepackage{url}
+\usepackage{amsmath}
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\usepackage{graphicx}
+
+
+\begin{document}
+
+\title{SPCUP 2020: IEEE Signal Processing Cup 2020}
+
+\author{Daniele Scapin, Gabriele Ferraresso, Marco Perin, Piero Simonetto, Riccardo Lorigiola
+\thanks{This competition is sponsored by the IEEE Signal Processing Society and MathWorks}
+\thanks{All author is with the University of Padue, Padova, ITA}}
+
+\markboth{Journal of \LaTeX\ Class Files, March 2020}
+{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
+\maketitle
+
+\begin{abstract}
+In this letter, we proposed our method to solve the problem of unsupervised abnormality detection.
+It involves four main steps : peaks and abnormalities during data acquisition saerch, anomaly check and system values update.
+\\First and second steps take place at the same time during program flow but they serch autonomously the anomaly. Peaks serch is implemented with the use of polyfit and Kalman evaluation, for prediction of the measures and calculation of the percentual change. Instead abnormalities during data acquisistion uses a modified version of the isolation forest to verify if during the measures are occurred discrepancies.
+\\ The third part leverages of the concept that if every sensor in the autonomous system reports an anomaly, it means that the behavior is not anomaly. The anomaly check uses a tree structure to get feedback from each sensor.
+\\ The system values update is used to improve respose time and to update the variables needed in other sections.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Abnormalities detection, peaks search, Kalman filter, isoaltion forest, tree structure
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+
+\IEEEPARstart
+{T}{o do}
+\\(Descrizione dettagliata flow del programma, associata al flow diagram)
+
+\section{Peaks search: FindPeaksWrapper}
+
+$FindPeaksWrapper(...)$ is used to find noticeable variation in the sensors data flow.
+The program can be divided in four main elements: polyfit, Kalman filter, peak presence
+and variables update.
+
+\subsection{Polyfit}
+For each sensor, for each new data acquisition the variation between the measure and the prediction is checked by $poly\_fit(...)$ function (it uses $polyfit(...)$ and $polyval(...)$ Matlab functions). This evaluation is done only if the number of elements to analyse is greater than degree of polyfit evaluation plus three (in the program degree plus three). This restriction is caused by the necessity of the presence of one element to verify and of degree plus two elements for $polyfit(...)$(plus two and not one because so the parametric estimation has al least a degree of freedom).
+
+\subsection{Kalman Filter}
+The Kalman filter is used only when the cosidered data is space, velocity and acceleration (angular or linear) and the acceleration is almost constant.
+The Kalman filter needs the state transition matrix to be built (obtained from the differential equations of the model). In this case the model is a black box model thus it can't be described exactly. For these reasons the Kalman filter is used only on space, velocity and acceleration with uniform acceleration.
+The Kalman filter is used anyway because if the autonomous system makes continuous and without variations paths/movements, it will generate a more accurate evaluation than $poly\_fit$.
+The filter is activated by the evaluation of slope of regression line (the coefficient is generated inside $poly\_fit$ function).
+The covariance matrix ($Pn\_...$) is initialized as $10$\hspace{1mm}$eye(...)$ and update during subsequent cycles.
+The covariance matrix of the measures ($Q$) is set by $var2\_error$ vector placed diagonally (the motivation of these setting is explained in the next sections).
+
+\subsection{Peaks Presence}
+The peak presence is verified by calculating if the percentage of change between values expected and measured exceeds delta $[\%]$.
+The value of delta is the maximum between a pre-set value (gap), the average percentage change of previous check and percentage error change of polyfit evaluation. This check is necessary because if signal noise is very loud, the function avoids reporting every measures as anomaly.
+
+\subsection{Internal variables update}
+Inside $FindPeaksWrapper(...)$ there are three values (for each type of signal) that are used both as input and as output ($Pn\_2, varp\_error, var2\_error$) because in each cycle they are updated.
+$Pn\_2$ is necessary for Kalman filter evaluation and in each cycle it is updated whitin the function itself.
+$varp\_error$ is average percentage change between measure and prediction (error) (related to prediction).
+$var2\_error$ is average squared change between measure and prediction (error) and it is used in the covariance matrix of the measure.
+It is used as covariance matrix of the measure because assuming the noises as gaussian noises (processes is subjected to ambient, thermal and internal noise)
+\\\\
+$
+y_{measure} = y_{real} + e_{measure} $ \quad $ e_{measure} $ \texttildelow $ N(0, \Sigma_{measure})
+\\
+y_{estimate} = y_{real} + e_{estimate} $ \quad $ e_{estimate} $ \texttildelow $ N(0, \Sigma_{estimate})
+$
+\\\\
+The measures of different axis are considered unrelated (covariance matrix is diagonal).
+Unidimensional estimation of variance
+\\\\
+$
+e = y_{measure} - y_{estimate} $ \quad \quad \quad $ N(0, \theta)
+\\
+e_{i} = y_{measure_{i}} - y_{estimate_{i}}
+\\
+l_{e}(\theta) = -\log \left ( \prod_{i=1}^n p_{e_i}(\theta) \right ) 
+\\ 
+...$ \hspace{3mm} $ = \frac{n}{2}\log(2\pi) + \frac{n}{2}\log(\theta) + \sum_{i=1}^n \frac{e_i^2}{2\theta}
+\\
+\frac{\partial l_{e}(\theta)}{\partial \theta} = \frac{n}{2\theta}- \sum_{i=1}^n \frac{e_i^2}{2\theta^2}
+\\
+\hat\theta = \frac{\sum_{i=1}^n e_i^2}{n}
+$
+
+\subsection{Input - Output}
+Detailed specification in $FindPeaksWrapper(...)$
+\\
+$Input$
+\begin{itemize}
+\item t $-$ time vector 
+\item y $-$ vector of values of data\_type element
+\item data\_type $-$ type of data
+\item degree $-$ max degree during poly fit evaluation
+\item num $-$ number of elements evaluating during polyfit
+\item ap $-$ maximum permissible percentage error
+\item gap\_sva $-$ max variation to identify a constant element
+\end{itemize}
+
+$Output$
+\begin{itemize}
+\item already\_analysed $-$ true if all values of the corresponding data\_type are already analysed
+\item anomaly $-$ vector of all the anomaly of the corresponding data\_type
+\item error $-$ error of the last element ($y_{measured}-y_{predicted}$)
+\item y\_next $-$ prediction of the last element
+\end{itemize}
+
+\section{Isolation Forest}
+
+Isolation forest is a Statistical method to analize small dataset and find anomalies. We used this algorithm to analize data when the the points received are approximately constant. Isolation forest take a subsample of the data and ranomly select a dimension and a value in that dimension of the point, then points will be divided in two groups (points with a greater or equal value and points with lower value). By repeating this process until all points are isolated we are creating a binary tree. Repeating this process we obtain a forest of different trees where on the leaf of every tree we find the isolated points. Studing these trees we can obtain the average height of every point. Anomalies will have an average height lower than normal points. 
+Now the anomaly score s of an istance $x$ on a databes of $n$ istances is defined as :
+%se vuoi inserire le formule centrandole nella pagina fai come ho %fatto io, se invece le vuoi inserire nel testo usa il dollaro 
+%$equazione$
+\begin{gather}
+s(x,n)=2^{\frac{E(h(x)}{c(n)}} \\
+where \qquad c(n)=2H(n - 1) - \frac{n - 1}{n} \\
+and \qquad H(i)=\ln (i) + 0.5772156649
+\end{gather}
+
+\subsection{Input}
+%ti ho creato un elenco puntato con i vari ingressi, se non ti piace toglilo pure.
+\begin{itemize}
+\item NumTree: Number of trees inside the forest 
+\item maxPoint: Maximum points inside every tree of the forest 
+\item sk: Anomaly threshold 
+\item type: Type of the new element 
+\item newEl: New point of the forest 
+\end{itemize}
+
+\subsection{Output}
+
+\begin{itemize}
+\item Last: True if newEl is abnormal, false otherwise
+\item Abnormal: True if there are abnormalities, False otherwise
+\item posOfAnomaly: Index of abnormal points
+\item h: Average height of each point in the forest
+\item s: Anomaly score of each point in the forest
+\end{itemize}
+
+
+\section{Anomaly Check}
+ 
+This part contains classes and functions to structure data in a prioritized way, 
+to avoid unnecessary controls over sensor that are less likely to give data representing a true anomaly
+
+\section{System Values Update}
+
+\subsection{To do}
+\end{document}
+
+
