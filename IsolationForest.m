@@ -12,7 +12,7 @@
 %h:(numeber vector) Average height of each point in the forest
 %s:(numeber vector) Anomaly score of each point in the forest
 
-function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest1(numTree,maxPoint,sk,type, newEl)
+function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,sk,type, newEl)
     
     persistent Data;
     NumTree = numTree; % number of isolation trees
