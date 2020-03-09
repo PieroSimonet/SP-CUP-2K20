@@ -75,7 +75,7 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
     % if is already analysed return to Main
     if anomalyArray{index,2} == length(t)
         already_analysed = true;
-        anomaly = false;
+        anomaly = anomalyArray{index,1};
         error = 0;
         y_next = 0;
         return
@@ -96,7 +96,7 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
             % find peaks without Kalman filter (no specific model)
             [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}] = find_peaks_general(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2});
         end
-        anomalyArray{index,1} = [anomalyArray{index,1} anomaly_tmp];
+        
         anomalyArray{index,1} = [anomalyArray{index,1} anomaly_tmp];
         error(:,i-anomalyArray{index,2}) = error_tmp;
         y_next(:,i-anomalyArray{index,2}) = y_next_tmp;

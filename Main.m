@@ -5,31 +5,43 @@ clear all;
 
 run InizializeNameOfFiles.m;
 
-
+% inizializzazione variabili
 i = 1;
-
 [numForest, ~] = OptimizeParameter( 70 );
-
-bagFile = bagManager(file2);
+bagFile = bagManager(file1);
+% vettore di visualizzazione
+see{4} = [];
+test = 0;
 
 while not(bagFile.LastTimeDone())
 
-    Data = bagFile.getData();
+    % data - {i,1}: valori misurati
+    %        {i,2}: vettore dei tempi
+    %        {i,3}: tipologia dato
+    
+    data = bagFile.getData();
     
     degree = 2;
     num = 20;
-    gap = 0.5;
+    gap = 0.2;
     gap_sva = 0.1;
     
-    [already_analyzed, anomaly, v_forest, ~] = FindPeaksWrapper(time, data{1}, "batteryVoltage", degree, num, gap, gap_sva);
+    [already_analyzed, anomaly, v_forest, y_calc] = FindPeaksWrapper(data{1,2}, data{1,1}, data{1,3}(1), degree, num, gap, gap_sva);
     
+    if already_analyzed
+        test = test+1;
+    end
     if not(already_analyzed)
-        data{2} = anomaly;
-        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, "batteryVoltage" , v_forest);
-        data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
+        see{1} = anomaly;
+        see{3} = [see{3} y_calc];
+        see{4} = [see{4} v_forest];
+        
+        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, data{1,3}(1) , v_forest);
+        see{2} = s;
         
         AnomalyDetection(anomaly,s,[]);
-    
+        
+        
        %  RealTimePrint(data,time,1);
     end
 
@@ -39,3 +51,19 @@ while not(bagFile.LastTimeDone())
     bagFile = bagFile.updateTime(diffTime);
 end
 
+% Plot
+% presenza anomalie
+figure
+plot(data{1,2}, see{1})
+hold on
+plot(see{2}>0.7)
+
+% previsioni
+figure
+plot(data{1,2}, data{1,1})
+hold on
+plot(data{1,2}, see{3})
+
+% valori passati a IsolationForest
+figure
+plot(data{1,2},see{4})

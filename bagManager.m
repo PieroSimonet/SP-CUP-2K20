@@ -23,8 +23,8 @@ classdef bagManager
             obj.EndTime = obj.BagFile.EndTime;
             obj.CurrentTime = obj.StartTime + 0.25;
             obj.MainIndex = 1;
-            obj.VoltageIndex = 1;
-            obj.OdomIndex = 1;
+            obj.VoltageIndex = 0;
+            obj.OdomIndex = 0;
             obj.LastTimeDone = false;
             obj = obj.updateData();
         end
@@ -45,47 +45,66 @@ classdef bagManager
         end
 
         function obj = updateData(obj)
-
+            
+            % voltage
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', "/mavros/battery");
             message = readMessages(bagTmp,'DataFormat','struct');
             t = bagTmp.MessageList.Time;
             haveUpdate = false;
-            for tmpIndex = obj.VoltageIndex : length(message)
-                obj.Data{obj.MainIndex,1} = message{tmpIndex}.Voltage;
-                obj.Data{obj.MainIndex,2} = t(tmpIndex);
+            
+            %% extrapolation voltage
+            if obj.VoltageIndex ~= length(message)
+                
+                obj.Data{obj.MainIndex,1} = zeros(1,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(i) = message{i}.Voltage;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "voltage";
+                
+                % new row for the next element to load
                 obj.MainIndex = obj.MainIndex + 1;
                 haveUpdate = true;
             end
+            % update numer of elements
             if haveUpdate
-                obj.VoltageIndex = length(message) + 1 ;
+                obj.VoltageIndex = length(message);
             end
 
-
+            %% extrapolation position
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/local_position/odom');
             message = readMessages(bagTmp,'DataFormat','struct');
             t = bagTmp.MessageList.Time;
             haveUpdate = false;
             
-            for tmpIndex = obj.OdomIndex : length(message)
-                obj.Data{obj.MainIndex,1} = message{tmpIndex,1}.Pose.Pose.Position.X;
-                obj.Data{obj.MainIndex,2} = t(tmpIndex);
-                obj.Data{obj.MainIndex,3} = "PosX";
+            if obj.OdomIndex ~= length(message)
+                
+                obj.Data{obj.MainIndex,1} = zeros(3,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.X;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.y;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.z;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex,3} = "Pos";
+                
+                % new row for the next element to load
                 obj.MainIndex = obj.MainIndex + 1;
-                obj.Data{obj.MainIndex,1} = message{tmpIndex,1}.Pose.Pose.Position.Y;
-                obj.Data{obj.MainIndex,2} = t(tmpIndex);
-                obj.Data{obj.MainIndex,3} = "PosY";
-                obj.MainIndex = obj.MainIndex + 1;
-                obj.Data{obj.MainIndex,1} = message{tmpIndex,1}.Pose.Pose.Position.Z;
-                obj.Data{obj.MainIndex,2} = t(tmpIndex);
-                obj.Data{obj.MainIndex,3} = "PosZ";
-                obj.MainIndex = obj.MainIndex + 1;
-                haveUpdate = true;
+                haveUpdate = true;                
             end
             if haveUpdate
-                obj.OdomIndex = length(message) + 1 ;
+                obj.OdomIndex = length(message);
             end
-
+            
+            %% End of extrapolation
+            obj.MainIndex = 1;
+            
         end
 
     end
