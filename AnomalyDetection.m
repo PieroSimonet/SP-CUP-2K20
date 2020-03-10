@@ -18,19 +18,19 @@ classdef AnomalyDetection
         end
         
         % Insert
-        function anomaly = insert_peaks(index_anomaly, data_type)
+        function anomaly = insert_peaks(anomaly, index_anomaly, data_type)
             anomaly.index_peaks = anomaly.index_peaks + 1;
             anomaly.peaks{anomaly.index_peaks,1} = index_anomaly;
-            anomaly.peaks{anomaly.index_peaks,1} = data_type;
+            anomaly.peaks{anomaly.index_peaks,2} = data_type;
         end
         
-        function anomaly = insert_forest(index_anomaly, data_type)
+        function anomaly = insert_forest(anomaly, index_anomaly, data_type)
             anomaly.index_forest = anomaly.index_forest + 1;
             anomaly.forest{anomaly.index_forest,1} = index_anomaly;
-            anomaly.forest{anomaly.index_forest,1} = data_type;
+            anomaly.forest{anomaly.index_forest,2} = data_type;
         end
         
-        function anomaly = update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data_type)
+        function anomaly = update(anomaly, peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data_type)
             
             if ~isempty(peak_anomaly)
                 if sum(peak_anomaly)>0
@@ -43,11 +43,7 @@ classdef AnomalyDetection
             end
         end
         
-    end
-    
-    methods (Static)
-        
-        function anomaly = reset()
+        function anomaly = reset(anomaly)
             anomaly.peaks = {};
             anomaly.index_peaks = 0;
             anomaly.forest = {};

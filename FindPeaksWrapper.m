@@ -76,8 +76,9 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
         already_analysed = true;
         anomaly = 0;
         start = 0;
-        error = 0;
-        y_next = 0;
+        [rows, ~] = size(y);
+        error = zeros(rows,1);
+        y_next = y(:,end);
         return
     end
     

@@ -85,8 +85,8 @@ classdef bagManager
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
                     obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.X;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.y;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.z;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Y;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Z;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
