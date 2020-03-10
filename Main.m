@@ -36,7 +36,7 @@ while not(bagFile.LastTimeDone())
         see{3} = [see{3} y_calc];
         see{4} = [see{4} v_forest];
         
-        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, data{1,3}(1) , v_forest);
+        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, data{1,3}(1) , v_forest');
         see{2} = s;
         
         AnomalyDetection(anomaly,s,[]);
