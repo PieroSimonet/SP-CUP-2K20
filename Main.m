@@ -15,7 +15,7 @@ anomaly = AnomalyDetection();
 % DA INSERIRE IN OptimizerParameter
 
 degree = 2;
-num = 20;
+num = 5;
 gap = 0.2;
 gap_sva = 0.1;
 
@@ -45,20 +45,30 @@ while not(bagFile.LastTimeDone())
     
     for i=1:n_sensor
         %% Picchi e dati per IsolationForest
+        
         [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
         
+        
         if not(already_analyzed)
-            % variabili aggiuntive per test
-            see{1,i} = [see{1,i} peak_anomaly];
-            see{3,i} = [see{3,i} y_calc];
-            see{4,i} = [see{4,i} v_forest];
-            
             %% Foresta
-            [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, 20, 0.7, data{i,3}(1), v_forest);
-            see{2,i} = s;
+            [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, 20, 0.7, data{i,3}(1), v_forest');
             
             %% Aggiornamento riscontro picchi
             anomaly = anomaly.update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
+            
+            % variabili aggiuntive per test
+            if data{i,3} == "voltage"
+                see{1,1} = [see{1,1} peak_anomaly];
+                see{2,1} = s;
+                see{3,1} = [see{3,1} y_calc];
+                see{4,1} = [see{4,1} v_forest];
+            else
+                see{1,2} = [see{1,2} peak_anomaly];
+                see{2,2} = s;
+                see{3,2} = [see{3,2} y_calc];
+                see{4,2} = [see{4,2} v_forest];
+            end
+            
             
         end
         
@@ -85,16 +95,25 @@ end
 % Plot
 % presenza anomalie
 %figure
-%plot(data{1,2}, see{1})
-%hold on
-%plot(see{2}>0.7)
+%plot(see{1,2})
 
 % previsioni
 %figure
-%plot(data{1,2}, data{1,1})
+%plot(data{2,1}(1,:))
 %hold on
-%plot(data{1,2}, see{3})
+%plot(see{3,2}(1,:))
+
+%figure
+%plot(data{2,1}(2,:))
+%hold on
+%plot(see{3,2}(2,:))
+
+%figure
+%plot(data{2,1}(3,:))
+%hold on
+%plot(see{3,2}(3,:))
+
 
 % valori passati a IsolationForest
 %figure
-%plot(data{1,2},see{4})
+%plot(see{4,1})

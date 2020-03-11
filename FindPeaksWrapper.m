@@ -37,7 +37,7 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
         dataType{1} = data_type;    % type of data
         anomalyArray{1,1} = 0;      % number of elements analysed
         [rows, ~] = size(y);
-        var{1,1} = zeros(rows,1);   % varp_error
+        var{1,1} = zeros(rows+1,1);   % varp_error
         var{1,2} = zeros(rows,1);   % var2_error
         if (data_type == "sva_l")||(data_type == "sva_a")
             % Pn_2 and Rn
@@ -61,7 +61,7 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
         dataType{index} = data_type;
         anomalyArray{index,1} = 0;
         [rows, ~] = size(y);
-        var{index,1} = zeros(rows,1); % varp_error
+        var{index,1} = zeros(rows+1,1); % varp_error
         var{index,2} = zeros(rows,1); % var2_error
         
         % check if is sva_l or sva_a

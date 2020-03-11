@@ -74,7 +74,7 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,sk,
            idx=Data.(type).idx;
            
            for k=1:points
-               Data.(type).dati(idx+k-1,:)=newEl(:,k);%insertion of the new point
+               Data.(type).dati(idx+k-1,:)=newEl(k,:);%insertion of the new point
            end
            Data.(type).idx=Data.(type).idx+points-1;
            idx=Data.(type).idx;
