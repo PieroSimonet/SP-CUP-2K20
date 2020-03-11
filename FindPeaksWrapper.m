@@ -12,9 +12,10 @@
  
 %% Output
  
-% already_analysed  - true if all values of the corresponding                       [Boolean]
-%                     data_type are already analysed
+% already_analysed  - true if all values of the corresponding data_type are         [Boolean]
+%                     already analysed
 % anomaly           - vector of anomalies of the data_type's last entered elements  [Boolean[]]
+%                   - or if the last element of t is anomaly
 % start             - corresponding sample number of the first elements of anomaly  [int]
 % error             - error of not evaluated elements (y_measured-y_predicted)      [double[]]
 % y_next            - prediction of not evaluated elements                          [double[]]
@@ -36,8 +37,9 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
     if isempty(dataType)
         dataType{1} = data_type;    % type of data
         anomalyArray{1,1} = 0;      % number of elements analysed
+        anomalyArray{1,2} = [];     % anomaly vector of data_type
         [rows, ~] = size(y);
-        var{1,1} = zeros(rows+1,1);   % varp_error
+        var{1,1} = zeros(rows+1,1); % varp_error
         var{1,2} = zeros(rows,1);   % var2_error
         if (data_type == "sva_l")||(data_type == "sva_a")
             % Pn_2 and Rn
@@ -60,6 +62,7 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
         index = length(dataType)+1;
         dataType{index} = data_type;
         anomalyArray{index,1} = 0;
+        anomalyArray{index,2} = [];
         [rows, ~] = size(y);
         var{index,1} = zeros(rows+1,1); % varp_error
         var{index,2} = zeros(rows,1); % var2_error
@@ -72,9 +75,10 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
     end
     
     % if is already analysed return to Main
-    if anomalyArray{index,1} == length(t)
+    if anomalyArray{index,1} >= length(t)
         already_analysed = true;
-        anomaly = 0;
+        % return if last element of t is anomaly
+        anomaly = anomalyArray{index,2}(length(t));
         start = 0;
         [rows, ~] = size(y);
         error = zeros(rows,1);
@@ -110,6 +114,7 @@ function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t,
         y_next(:,i-anomalyArray{index,1}) = y_next_tmp;
     end
     
+    anomalyArray{index,2} = [anomalyArray{index,2} anomaly];
     start = anomalyArray{index,1};
     
     % update number of verified elements
