@@ -1,4 +1,4 @@
-function [newNumForest] = OptimizeParameter(numForest)
+function [newNumForest, time] = OptimizeParameter(numForest)
 %OPTIMIZEPARAMETER Summary of this function goes here
 %   Detailed explanation goes here
     [hour,minute,second] = getDifferenceInTime();
@@ -11,6 +11,7 @@ function [newNumForest] = OptimizeParameter(numForest)
     end
 
     newNumForest = numForest;
+    time = second + minute * 60;
 end
 
 function [hour,minute,second] = getDifferenceInTime()

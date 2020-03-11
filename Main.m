@@ -7,63 +7,115 @@ clear all;
 
 run InizializeNameOfFiles.m;
 
-i = 1;
+%% Inizializzazione variabili sistema
 
-numForest = OptimizeParameter( 70 );
+[numForest, ~] = OptimizeParameter( 70 );
+bagFile = bagManager(file3);
+anomaly = AnomalyDetection();
 
-file = file2;
+% Variabili per FindPeaksWrapper
+% DA INSERIRE IN OptimizerParameter
 
-while HaveNextFrame(file)
+degree = 2;
+num = 5;
+gap = 0.2;
+gap_sva = 0.1;
 
-    msgVoltage = GetDataFromCurrentFrame(file, batteryVoltage, false);
-    msgImu = GetDataFromCurrentFrame(file, imuData, false);
-    % msgBody = GetDataFromCurrentFrame(file, velocityBody, false);
-    % msgLoca = GetDataFromCurrentFrame(file, velocityLocal, false);
-    msgOdom = GetDataFromCurrentFrame(file, odom, false);
+%% Vettori per i test
+
+see{4,2} = [];
+test = 0;
+
+%% Main
+
+% Esistenza dati successivi
+while not(bagFile.LastTimeDone())    
+    %% Estrazione dati
+    % data - {i,1}: valori misurati
+    %        {i,2}: vettore dei tempi
+    %        {i,3}: tipologia dato
+    data = bagFile.getData();
     
-    % Push data to trees
-    [t1,t2,t3] = PushTrees(msgImu{i,1}, msgOdom{i,1},true);
+    %% Verifica se � possibile poter attivare il kalman
+    % kalman_ok = kalman_activation(data);
     
-    data{1}(i) = msgVoltage{i}.Voltage;
-
-    dataPos{1}(i) = msgOdom{i,1}.Pose.Pose.Position.X;
-    dataPos{2}(i) = msgOdom{i,1}.Pose.Pose.Position.Y;
-    dataPos{3}(i) = msgOdom{i,1}.Pose.Pose.Position.Z;
-
-    dataPos{4}(i) = msgImu{i,1}.LinearAcceleration.X;
-    dataPos{5}(i) = msgImu{i,1}.LinearAcceleration.Y;
-    dataPos{6}(i) = msgImu{i,1}.LinearAcceleration.Z;
-
-    dataAng{1}(i) = msgOdom{i,1}.Twist.Twist.Linear.X;
-    dataAng{2}(i) = msgOdom{i,1}.Twist.Twist.Linear.Y;
-    dataAng{3}(i) = msgOdom{i,1}.Twist.Twist.Linear.Z;
-
-    dataAng{4}(i) = msgImu{i,1}.AngularVelocity.X;
-    dataAng{5}(i) = msgImu{i,1}.AngularVelocity.Y;
-    dataAng{6}(i) = msgImu{i,1}.AngularVelocity.Z;
+    %% Controllo tutti i sensori
+    % se in bagFile ci sono pi� sensori da controllare che quelli
+    % principali sostituire n_sensor con il numero di sensori principali e
+    % RICORDARSI DI INSERIRE QUELLI PRINCIPALI IN CIMA
+    [n_sensor, ~] = size(data);
+    
+    for i=1:n_sensor
+        %% Picchi e dati per IsolationForest
         
-    time(i) = i;
-    
-    degree = 2;
-    num = 20;
-    gap = 0.5;
-    gap_sva = 0.1;
-    
-    [already_analyzed, anomaly, v_forest, ~] = FindPeaksWrapper(time, data{1}, "batteryVoltage", degree, num, gap, gap_sva);
-    
-    if not(already_analyzed)
-        data{2} = anomaly;
-        [ ~, an, ps, ~, s] = IsolationForest( numForest, 20, 0.7, "batteryVoltage" , v_forest);
-        data{3} = s * 10; % Scalo il vettore s per vedere un po com'è la situazione
+        [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
         
-        AnomalyDetection(anomaly,s,[]);
-    
-        RealTimePrint(data,time,1);
+        
+        if not(already_analyzed)
+            %% Foresta
+            [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, 20, 0.7, data{i,3}(1), v_forest');
+            
+            %% Aggiornamento riscontro picchi
+            anomaly = anomaly.update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
+            
+            % variabili aggiuntive per test
+            if data{i,3} == "voltage"
+                see{1,1} = [see{1,1} peak_anomaly];
+                see{2,1} = s;
+                see{3,1} = [see{3,1} y_calc];
+                see{4,1} = [see{4,1} v_forest];
+            else
+                see{1,2} = [see{1,2} peak_anomaly];
+                see{2,2} = s;
+                see{3,2} = [see{3,2} y_calc];
+                see{4,2} = [see{4,2} v_forest];
+            end
+            
+            
+        end
+        
     end
-
-    i = i+1;
+    
+    %% ANALISI ALBERI DI CHECK
+    if ~isempty(anomaly.peaks)        
+    end
+    
+    if ~isempty(anomaly.forest)        
+    end
+    
+    % reset picchi
+    %anomaly = anomaly.reset();
+    
     % Per ora segna solo la differenza di tempo tra la chiamata e la
     % precendete
-    numForest = OptimizeParameter( numForest );
+    [numForest, diffTime] = OptimizeParameter( numForest );
+    
+    bagFile = bagFile.updateTime(diffTime);
+    
 end
 
+% Plot
+% presenza anomalie
+%figure
+%plot(see{1,2})
+
+% previsioni
+%figure
+%plot(data{2,1}(1,:))
+%hold on
+%plot(see{3,2}(1,:))
+
+%figure
+%plot(data{2,1}(2,:))
+%hold on
+%plot(see{3,2}(2,:))
+
+%figure
+%plot(data{2,1}(3,:))
+%hold on
+%plot(see{3,2}(3,:))
+
+
+% valori passati a IsolationForest
+%figure
+%plot(see{4,1})
