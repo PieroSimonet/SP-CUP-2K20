@@ -12,14 +12,15 @@
  
 %% Output
  
-% already_analysed  - true if all values of the corresponding                   [Boolean]
+% already_analysed  - true if all values of the corresponding                       [Boolean]
 %                     data_type are already analysed
-% anomaly           - vector of all the anomaly of the corresponding data_type  [Boolean[]]
-% error             - error of not evaluated elements (y_measured-y_predicted)  [double[]]
-% y_next            - prediction of not evaluated elements                      [double[]]
+% anomaly           - vector of anomalies of the data_type's last entered elements  [Boolean[]]
+% start             - corresponding sample number of the first elements of anomaly  [int]
+% error             - error of not evaluated elements (y_measured-y_predicted)      [double[]]
+% y_next            - prediction of not evaluated elements                          [double[]]
  
 %% Function
-function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, data_type, degree, num, gap, gap_sva)
+function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t, y, data_type, degree, num, gap, gap_sva)
     
     persistent dataType;
     persistent anomalyArray;
@@ -34,10 +35,9 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
     
     if isempty(dataType)
         dataType{1} = data_type;    % type of data
-        anomalyArray{1,1} = [];     % anomaly vector
-        anomalyArray{1,2} = 0;      % number of elements analysed
+        anomalyArray{1,1} = 0;      % number of elements analysed
         [rows, ~] = size(y);
-        var{1,1} = zeros(rows,1);   % varp_error
+        var{1,1} = zeros(rows+1,1);   % varp_error
         var{1,2} = zeros(rows,1);   % var2_error
         if (data_type == "sva_l")||(data_type == "sva_a")
             % Pn_2 and Rn
@@ -59,10 +59,9 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
     if index == 0
         index = length(dataType)+1;
         dataType{index} = data_type;
-        anomalyArray{index,1} = [];
-        anomalyArray{index,2} = 0;
+        anomalyArray{index,1} = 0;
         [rows, ~] = size(y);
-        var{index,1} = zeros(rows,1); % varp_error
+        var{index,1} = zeros(rows+1,1); % varp_error
         var{index,2} = zeros(rows,1); % var2_error
         
         % check if is sva_l or sva_a
@@ -73,21 +72,30 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
     end
     
     % if is already analysed return to Main
-    if anomalyArray{index,2} == length(t)
+    if anomalyArray{index,1} == length(t)
         already_analysed = true;
-        anomaly = anomalyArray{index,1};
-        error = 0;
-        y_next = 0;
+        anomaly = 0;
+        start = 0;
+        [rows, ~] = size(y);
+        error = zeros(rows,1);
+        y_next = y(:,end);
         return
     end
     
     % initialization (increase efficiency)
     [rows, ~] = size(y);
-    error = zeros(rows,length(t)-anomalyArray{index,2});
-    y_next = zeros(rows,length(t)-anomalyArray{index,2});
+    columns = length(t)-anomalyArray{index,1};
+    error = zeros(rows,columns);
+    y_next = zeros(rows,columns);
+    
+    if (dataType{index} == "sva_l")||(dataType{index} == "sva_a")
+        anomaly = zeros(3, columns);
+    else
+        anomaly = zeros(1, columns);
+    end
     
     % Update variables and calc of y_next, error and anomaly
-    for i= (anomalyArray{index,2}+1):length(t)
+    for i= (anomalyArray{index,1}+1):length(t)
         
         if (dataType{index} == "sva_l")||(dataType{index} == "sva_a")
             % find peaks with Kalman filter (specific calc cases)
@@ -97,14 +105,14 @@ function [already_analysed, anomaly, error, y_next] = FindPeaksWrapper(t, y, dat
             [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}] = find_peaks_general(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2});
         end
         
-        anomalyArray{index,1} = [anomalyArray{index,1} anomaly_tmp];
-        error(:,i-anomalyArray{index,2}) = error_tmp;
-        y_next(:,i-anomalyArray{index,2}) = y_next_tmp;
+        anomaly(i-anomalyArray{index,1}) = anomaly_tmp;
+        error(:,i-anomalyArray{index,1}) = error_tmp;
+        y_next(:,i-anomalyArray{index,1}) = y_next_tmp;
     end
     
-    % update number of verify elements
-    anomalyArray{index,2} = length(t);
- 
-    anomaly = anomalyArray{index,1};
+    start = anomalyArray{index,1};
+    
+    % update number of verified elements
+    anomalyArray{index,1} = length(t);
  
 end

@@ -70,15 +70,16 @@ classdef bagManager
                 obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "voltage";
-                
-                % new row for the next element to load
-                obj.MainIndex = obj.MainIndex + 1;
                 haveUpdate = true;
             end
             % update numer of elements
             if haveUpdate
                 obj.VoltageIndex = length(message);
             end
+            
+            % new row for the next element to load
+            obj.MainIndex = obj.MainIndex + 1;
+
 
             %% extrapolation position
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/local_position/odom');
@@ -91,23 +92,24 @@ classdef bagManager
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
                     obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.X;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Y;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Z;
+                    obj.Data{obj.MainIndex,1}(2,i) = message{i}.Pose.Pose.Position.Y;
+                    obj.Data{obj.MainIndex,1}(3,i) = message{i}.Pose.Pose.Position.Z;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
                 obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
-                obj.Data{obj.MainIndex,3} = "Pos";
-                
-                % new row for the next element to load
-                obj.MainIndex = obj.MainIndex + 1;
+                obj.Data{obj.MainIndex,3} = "Pos";                
                 haveUpdate = true;                
             end
             if haveUpdate
                 obj.OdomIndex = length(message);
             end
+            
+            % new row for the next element to load
+            obj.MainIndex = obj.MainIndex + 1;
 
+            
             %% extrapolation angular velocity
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/imu/data');
             message = readMessages(bagTmp,'DataFormat','struct');
@@ -118,9 +120,9 @@ classdef bagManager
                 
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.X;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.Y;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.Z;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.AngularVelocity.X;
+                    obj.Data{obj.MainIndex,1}(2,i) = message{i}.AngularVelocity.Y;
+                    obj.Data{obj.MainIndex,1}(3,i) = message{i}.AngularVelocity.Z;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
@@ -128,13 +130,14 @@ classdef bagManager
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "AngularVelocity";
                 
-                % new row for the next element to load
-                obj.MainIndex = obj.MainIndex + 1;
                 haveUpdate = true;                
             end
             if haveUpdate
                 obj.AngularVelocityIndex = length(message);
             end
+            
+            % new row for the next element to load
+            obj.MainIndex = obj.MainIndex + 1;
 
             %% extrapolation linear acceleration
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/imu/data');
@@ -146,9 +149,9 @@ classdef bagManager
                 
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.X;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.Y;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.Z;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.LinearAcceleration.X;
+                    obj.Data{obj.MainIndex,1}(2,i) = message{i}.LinearAcceleration.Y;
+                    obj.Data{obj.MainIndex,1}(3,i) = message{i}.LinearAcceleration.Z;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
@@ -156,15 +159,16 @@ classdef bagManager
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "LinearAcceleration";
                 
-                % new row for the next element to load
-                obj.MainIndex = obj.MainIndex + 1;
                 haveUpdate = true;                
             end
             if haveUpdate
                 obj.LinearAccelerationIndex = length(message);
             end
+            
+            % new row for the next element to load
+            obj.MainIndex = obj.MainIndex + 1;
 
-            %% extrapolation linear acceleration
+            %% extrapolation state
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/state');
             message = readMessages(bagTmp,'DataFormat','struct');
             t = bagTmp.MessageList.Time;
@@ -174,7 +178,7 @@ classdef bagManager
                 
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.SystemStatus;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.SystemStatus;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
@@ -182,14 +186,16 @@ classdef bagManager
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "State";
                 
-                % new row for the next element to load
-                obj.MainIndex = obj.MainIndex + 1;
                 haveUpdate = true;                
             end
             if haveUpdate
                 obj.StatusIndex = length(message);
             end
-
+            
+            % new row for the next element to load
+            obj.MainIndex = obj.MainIndex + 1;
+            
+            
             
             %% End of extrapolation
             obj.MainIndex = 1;
