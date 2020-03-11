@@ -11,6 +11,9 @@ classdef bagManager
         MainIndex
         VoltageIndex
         OdomIndex
+        AngularVelocityIndex
+        LinearAccelerationIndex
+        StatusIndex
         LastTimeDone
     end
     
@@ -25,6 +28,9 @@ classdef bagManager
             obj.MainIndex = 1;
             obj.VoltageIndex = 0;
             obj.OdomIndex = 0;
+            obj.AngularVelocityIndex = 0;
+            obj.LinearAccelerationIndex = 0;
+            obj.StatusIndex = 0;
             obj.LastTimeDone = false;
             obj = obj.updateData();
         end
@@ -85,8 +91,8 @@ classdef bagManager
                 obj.Data{obj.MainIndex,1} = zeros(3,length(message));
                 for i=1:length(message)
                     obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.X;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.y;
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.z;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Y;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Pose.Pose.Position.Z;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
@@ -101,6 +107,89 @@ classdef bagManager
             if haveUpdate
                 obj.OdomIndex = length(message);
             end
+
+            %% extrapolation angular velocity
+            bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/imu/data');
+            message = readMessages(bagTmp,'DataFormat','struct');
+            t = bagTmp.MessageList.Time;
+            haveUpdate = false;
+            
+            if obj.AngularVelocityIndex ~= length(message)
+                
+                obj.Data{obj.MainIndex,1} = zeros(3,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.X;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.Y;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.AngularVelocity.Z;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex,3} = "AngularVelocity";
+                
+                % new row for the next element to load
+                obj.MainIndex = obj.MainIndex + 1;
+                haveUpdate = true;                
+            end
+            if haveUpdate
+                obj.AngularVelocityIndex = length(message);
+            end
+
+            %% extrapolation linear acceleration
+            bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/imu/data');
+            message = readMessages(bagTmp,'DataFormat','struct');
+            t = bagTmp.MessageList.Time;
+            haveUpdate = false;
+            
+            if obj.LinearAccelerationIndex ~= length(message)
+                
+                obj.Data{obj.MainIndex,1} = zeros(3,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.X;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.Y;
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.LinearAcceleration.Z;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex,3} = "LinearAcceleration";
+                
+                % new row for the next element to load
+                obj.MainIndex = obj.MainIndex + 1;
+                haveUpdate = true;                
+            end
+            if haveUpdate
+                obj.LinearAccelerationIndex = length(message);
+            end
+
+            %% extrapolation linear acceleration
+            bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/state');
+            message = readMessages(bagTmp,'DataFormat','struct');
+            t = bagTmp.MessageList.Time;
+            haveUpdate = false;
+            
+            if obj.StatusIndex ~= length(message)
+                
+                obj.Data{obj.MainIndex,1} = zeros(3,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i, 1}.SystemStatus;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex,3} = "State";
+                
+                % new row for the next element to load
+                obj.MainIndex = obj.MainIndex + 1;
+                haveUpdate = true;                
+            end
+            if haveUpdate
+                obj.StatusIndex = length(message);
+            end
+
             
             %% End of extrapolation
             obj.MainIndex = 1;
