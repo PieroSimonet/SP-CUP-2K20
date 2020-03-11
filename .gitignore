@@ -1,2 +1,5 @@
 *.bag
 *.asv
+*.out
+*.log
+*.aux

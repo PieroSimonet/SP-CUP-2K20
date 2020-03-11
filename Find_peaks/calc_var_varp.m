@@ -23,7 +23,7 @@ function [varp_error, varp_error_short, var2_error] = calc_var_varp(error, v_nex
     
     % update and average
     n = n+1;
-    varp_error_short = ((varp_error_short + abs(error))./abs(v_next_wz))./n;
+    varp_error_short = (((varp_error_short + abs(error))./abs(v_next_wz)))./n;
     var2_error = (var2_error + error.^2)./n;
     
     varp_error(1) = n;
