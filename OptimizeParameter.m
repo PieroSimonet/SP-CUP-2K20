@@ -7,7 +7,7 @@ function [newNumForest, numElementForest, degree, num, gap, gap_sva, time] = Opt
     newNumForest = updateNumForest(time);
     degree = updateDegree(time);
     numElementForest = updateElementForest(time);
-    num = degree + 3;
+    num = degree + 5;
     gap = 0.2;
     gap_sva = updateGapSva(time);
 
@@ -20,8 +20,8 @@ function newNumForest = updateNumForest(diffTime)
     end
     if diffTime > 3
         numForest = numForest - 5;
-    elseif diffTime < 0.25
-        numForest = numForest + 5;
+    elseif diffTime < 0.70
+        numForest = numForest + 15;
     end
 
     if numForest < 60
@@ -38,7 +38,7 @@ function newGapSva = updateGapSva(diffTime)
     end
     if diffTime > 3
         gapSva = gapSva - 0.05;
-    elseif diffTime < 0.25
+    elseif diffTime < 0.70
         gapSva = gapSva + 0.05;
     end
 
@@ -52,7 +52,7 @@ end
 function numElementForest = updateElementForest(diffTime)
     persistent elementForest;
     if isempty(elementForest)
-        elementForest = 20;
+        elementForest = 40;
     end
     if diffTime > 3
         elementForest = elementForest - 5;
@@ -74,12 +74,16 @@ function newDegree = updateDegree(diffTime)
     end
     if diffTime > 3
         degree = degree - 1;
-    elseif diffTime < 0.25
+    elseif diffTime < 0.70
         degree = degree + 1;
     end
 
     if degree < 2
         degree = 1;
+    end
+
+    if degree > 4
+        degree = 4;
     end
 
     newDegree = degree;
