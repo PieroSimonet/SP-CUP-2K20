@@ -67,7 +67,7 @@ while not(bagFile.LastTimeDone())
     % precendete
     [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
-    bagFile = bagFile.updateTime();
+    bagFile = bagFile.updateTime(diffTime);
     
 end
 
