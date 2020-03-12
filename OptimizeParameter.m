@@ -8,7 +8,8 @@ function [newNumForest, numElementForest, degree, num, gap, gap_sva, time] = Opt
     degree = updateDegree(time);
     numElementForest = updateElementForest(time);
     num = degree + 5;
-    gap = 0.2;
+    gap = 0.2; % da (0,1) (estremi esclusi) -> vicino a 0 tanti picchi-> programma lento
+               %                            -> vicino a 1 pochi picchi-> programma piu' veloce ma inutile
     gap_sva = updateGapSva(time);
 
 end
@@ -41,11 +42,15 @@ function newGapSva = updateGapSva(diffTime)
     elseif diffTime < 0.70
         gapSva = gapSva + 0.05;
     end
-
+    
+    % upperand lower bound
     if gapSva < 0.05
         gapSva = 0.05;
+    else
+        if gapSva>0.3
+            gapSva = 0.3;
+        end
     end
-
     newGapSva = gapSva;
 end
 
@@ -80,10 +85,10 @@ function newDegree = updateDegree(diffTime)
 
     if degree < 2
         degree = 1;
-    end
-
-    if degree > 4
-        degree = 4;
+    else
+        if degree > 4
+            degree = 4;
+        end
     end
 
     newDegree = degree;

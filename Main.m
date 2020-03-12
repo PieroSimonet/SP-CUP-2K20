@@ -15,6 +15,7 @@ anomaly = AnomalyDetection();
 
 see = {};
 test = 0;
+j = 1;
 
 %% Main
 
@@ -26,11 +27,11 @@ while not(bagFile.LastTimeDone())
         %        {i,3}: tipologia dato
         data = bagFile.getData();
     
-    % Verifica se � possibile poter attivare il kalman
+    % Verifica se e' possibile poter attivare il kalman
         % kalman_ok = kalman_activation(data);
     
     % Controllo tutti i sensori
-        % se in bagFile ci sono pi� sensori da controllare che quelli
+        % se in bagFile ci sono piu' sensori da controllare che quelli
         % principali sostituire n_sensor con il numero di sensori principali e
         % RICORDARSI DI INSERIRE QUELLI PRINCIPALI IN CIMA
         [n_sensor, ~] = size(data);
@@ -39,7 +40,9 @@ while not(bagFile.LastTimeDone())
         %% Picchi e dati per IsolationForest
             % Picchi
             [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
-        
+            
+            n_analysed(j,i) = length(peak_anomaly) - already_analyzed;
+            
         if not(already_analyzed)
             % Foresta
                 [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), v_forest');
@@ -52,6 +55,8 @@ while not(bagFile.LastTimeDone())
             
         end
     end
+    
+    j = j+1;
     
     %% ANALISI ALBERI DI CHECK
     if ~isempty(anomaly.peaks)        
@@ -67,10 +72,17 @@ while not(bagFile.LastTimeDone())
     % precendete
     [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
+    % output funzione di ottimizzazione parametri
+    new_values(j-1,:) = [numForest, numElementForest, degree, num, gap, gap_sva, diffTime];
+    
     bagFile = bagFile.updateTime(diffTime);
     
 end
 
+% numero elementi analizzati ad ogni ciclo per ogni sensore
+n_analysed
+% valore sensori
+new_values
 
 %% Plot e controlli
 
