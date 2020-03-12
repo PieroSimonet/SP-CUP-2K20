@@ -7,17 +7,11 @@ run InizializeNameOfFiles.m;
 
 %% Inizializzazione variabili sistema
 
-[numForest, ~] = OptimizeParameter( 70 );
+[numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
+
 bagFile = bagManager(file3);
 anomaly = AnomalyDetection();
 
-% Variabili per FindPeaksWrapper
-% DA INSERIRE IN OptimizerParameter
-
-degree = 2;
-num = 5;
-gap = 0.2;
-gap_sva = 0.1;
 
 %% Vettori per i test
 
@@ -34,11 +28,11 @@ while not(bagFile.LastTimeDone())
     %        {i,3}: tipologia dato
     data = bagFile.getData();
     
-    %% Verifica se è possibile poter attivare il kalman
+    %% Verifica se ï¿½ possibile poter attivare il kalman
     % kalman_ok = kalman_activation(data);
     
     %% Controllo tutti i sensori
-    % se in bagFile ci sono più sensori da controllare che quelli
+    % se in bagFile ci sono piï¿½ sensori da controllare che quelli
     % principali sostituire n_sensor con il numero di sensori principali e
     % RICORDARSI DI INSERIRE QUELLI PRINCIPALI IN CIMA
     [n_sensor, ~] = size(data);
@@ -84,9 +78,7 @@ while not(bagFile.LastTimeDone())
     % reset picchi
     %anomaly = anomaly.reset();
     
-    % Per ora segna solo la differenza di tempo tra la chiamata e la
-    % precendete
-    [numForest, diffTime] = OptimizeParameter( numForest );
+    [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
     bagFile = bagFile.updateTime(diffTime);
     
