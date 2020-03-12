@@ -8,64 +8,49 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
-
 bagFile = bagManager(file3);
 anomaly = AnomalyDetection();
 
-
 %% Vettori per i test
 
-see{4,2} = [];
+see = {};
 test = 0;
 
 %% Main
 
 % Esistenza dati successivi
 while not(bagFile.LastTimeDone())    
-    %% Estrazione dati
-    % data - {i,1}: valori misurati
-    %        {i,2}: vettore dei tempi
-    %        {i,3}: tipologia dato
-    data = bagFile.getData();
+    % Estrazione dati
+        % data - {i,1}: valori misurati
+        %        {i,2}: vettore dei tempi
+        %        {i,3}: tipologia dato
+        data = bagFile.getData();
     
-    %% Verifica se � possibile poter attivare il kalman
-    % kalman_ok = kalman_activation(data);
+    % Verifica se � possibile poter attivare il kalman
+        % kalman_ok = kalman_activation(data);
     
-    %% Controllo tutti i sensori
-    % se in bagFile ci sono pi� sensori da controllare che quelli
-    % principali sostituire n_sensor con il numero di sensori principali e
-    % RICORDARSI DI INSERIRE QUELLI PRINCIPALI IN CIMA
-    [n_sensor, ~] = size(data);
+    % Controllo tutti i sensori
+        % se in bagFile ci sono pi� sensori da controllare che quelli
+        % principali sostituire n_sensor con il numero di sensori principali e
+        % RICORDARSI DI INSERIRE QUELLI PRINCIPALI IN CIMA
+        [n_sensor, ~] = size(data);
     
     for i=1:n_sensor
         %% Picchi e dati per IsolationForest
-        
-        [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
-        
+            % Picchi
+            [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
         
         if not(already_analyzed)
-            %% Foresta
-            [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, 20, 0.7, data{i,3}(1), v_forest');
+            % Foresta
+                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), v_forest');
             
-            %% Aggiornamento riscontro picchi
-            anomaly = anomaly.update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
+            % Aggiornamento riscontro picchi
+                anomaly = anomaly.update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
             
             % variabili aggiuntive per test
-            if data{i,3} == "voltage"
-                see{1,1} = [see{1,1} peak_anomaly];
-                see{2,1} = s;
-                see{3,1} = [see{3,1} y_calc];
-                see{4,1} = [see{4,1} v_forest];
-            else
-                see{1,2} = [see{1,2} peak_anomaly];
-                see{2,2} = s;
-                see{3,2} = [see{3,2} y_calc];
-                see{4,2} = [see{4,2} v_forest];
-            end
-            
+                see = update(see, peak_anomaly, s, y_calc, v_forest, data{i,3}(1));
             
         end
-        
     end
     
     %% ANALISI ALBERI DI CHECK
@@ -78,34 +63,62 @@ while not(bagFile.LastTimeDone())
     % reset picchi
     %anomaly = anomaly.reset();
     
+    % Per ora segna solo la differenza di tempo tra la chiamata e la
+    % precendete
     [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
-    bagFile = bagFile.updateTime(diffTime);
+    bagFile = bagFile.updateTime();
     
 end
 
-% Plot
-% presenza anomalie
-%figure
-%plot(see{1,2})
 
-% previsioni
-%figure
-%plot(data{2,1}(1,:))
-%hold on
-%plot(see{3,2}(1,:))
+%% Plot e controlli
 
-%figure
-%plot(data{2,1}(2,:))
-%hold on
-%plot(see{3,2}(2,:))
+[rows, ~] = size(see);
 
-%figure
-%plot(data{2,1}(3,:))
-%hold on
-%plot(see{3,2}(3,:))
+for i=1:rows
+    
+    [rows2, ~] = size(see{i,3});
+    
+    figure
+    plot(see{i,1})
+    title(see{i,5})
+    
+    for j=1:rows2
+        figure
+        plot(see{i,3}(j,:), '-b'); % blu predetto
+        hold on
+        plot(data{i,1}(j,:), '-r'); % rosso misurato
+        title(see{i,5})
+    end
+    
+end
 
-
-% valori passati a IsolationForest
-%figure
-%plot(see{4,1})
+function see_new = update(see, peak_anomaly, s, y_calc, v_forest, data_type)
+    
+    [rows, ~] = size(see);
+    
+    index = 0;
+    for i= 1:rows
+       if data_type == see{i,5} 
+            index = i;
+       end
+    end
+    
+    if index==0
+        index = rows+1;
+        see{index,1} = peak_anomaly;
+        see{index,2} = s;
+        see{index,3} = y_calc;
+        see{index,4} = v_forest;
+        see{index,5} = data_type;
+    else
+        see{index,1} = [see{index,1} peak_anomaly];
+        see{index,2} = s;
+        see{index,3} = [see{index,3} y_calc];
+        see{index,4} = [see{index,4} v_forest];
+    end
+    
+    see_new = see;
+    
+end
