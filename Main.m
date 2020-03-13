@@ -8,7 +8,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
-bagFile = bagManager(file3);
+bagFile = bagManager(file2);
 anomaly = AnomalyDetection();
 
 %% Vettori per i test
@@ -45,6 +45,7 @@ while not(bagFile.LastTimeDone())
             
         if not(already_analyzed)
             % Foresta
+                numElementForest = length(data{i,3}(1));
                 [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), v_forest');
             
             % Aggiornamento riscontro picchi
@@ -70,7 +71,7 @@ while not(bagFile.LastTimeDone())
     
     % Per ora segna solo la differenza di tempo tra la chiamata e la
     % precendete
-    [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
+    [numForest, ~, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
     % output funzione di ottimizzazione parametri
     new_values(j-1,:) = [numForest, numElementForest, degree, num, gap, gap_sva, diffTime];
