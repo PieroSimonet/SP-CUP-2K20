@@ -26,7 +26,10 @@ while not(bagFile.LastTimeDone())
         %        {i,2}: vettore dei tempi
         %        {i,3}: tipologia dato
         data = bagFile.getData();
-    
+        
+        % implementare kalman_ok
+        kalman_ok = zeros(2,4);
+        
     % Controllo tutti i sensori
         % se in bagFile ci sono piu' sensori da controllare che quelli
         % principali sostituire n_sensor con il numero di sensori principali e
@@ -36,19 +39,18 @@ while not(bagFile.LastTimeDone())
     for i=1:n_sensor
         %% Picchi e dati per IsolationForest
             % Picchi
-            [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
-            
+            [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc, data_type, kalman_ok] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva, kalman_ok);
             n_analysed(j,i) = length(peak_anomaly{1}) - already_analyzed;
-            
+        
+        % ciclo per vedere se escono piu' risultati -> kalman con spazio-velocita' e accelerazione
         if not(already_analyzed)
             % Foresta
-                %numElementForest = length(data{i,3}(1));
                 [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), (v_forest{1})');
             
             % Aggiornamento riscontro picchi
                 anomaly = anomaly.update(peak_anomaly{1}, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
             
-            % variabili aggiuntive per test
+            % variabili aggiuntive per test -> implementarla per kalman piu' grosso
                 see = update(see, peak_anomaly{1}, s, y_calc{1}, v_forest, data{i,3}(1));
             
         end

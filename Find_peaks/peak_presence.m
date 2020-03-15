@@ -1,7 +1,7 @@
 %% TO DO
 function [anomaly, varargout] = peak_presence(variation, y_next, y_last, gap, n_sensors, varargin)
     
-    % varargin ->  varp, var2
+    % varargin ->  sigma, varp, var2
     % varargout -> varp, var2
     
     anomaly{n_sensors} = [];
@@ -23,7 +23,7 @@ function [anomaly, varargout] = peak_presence(variation, y_next, y_last, gap, n_
         else
             
             [varp{i}, varp_short, var2{i}] = calc_var_varp(variation{i}, y_next{i}, varargin{1}{i}, varargin{2}{i});
-            if varp{i}<3
+            if varp{i}(1)<3
                 varp_short = zeros(size(varp_short));
             end
 
