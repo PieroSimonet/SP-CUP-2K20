@@ -112,8 +112,8 @@ function newDegree = updateDegree(diffTime)
     if degree < 2
         degree = 1;
     else
-        if degree > 4
-            degree = 4;
+        if degree > 3
+            degree = 3;
         end
     end
 
