@@ -1,37 +1,33 @@
-%% Input
+%% TO DO
 
-% t_poly    - time vector                              [double[]]
-% y_poly    - measures (length(y_poly) = num)          [double[]]
-% degree    - max degree during poly fit evaluation    [int]
-
-%% Output
-
-% v_next    - next value (predicted)                        [double[]]
-% error     - difference between prediction and measure     [double[]]
-% sigma     - precision of polyval evaluation               [double[]]
-% m         - coefficient of linear regression              [double[]]
-
-%% Function
-function [v_next, error, sigma, m] = poly_fit(t_poly, y_poly, degree)
+function [y_next, variation, m] = poly_fit(t_analyse, y_analyse, start, rows, degree)
     
-    [rows, ~] = size(y_poly);
-    error = zeros(rows,1);
-    sigma = zeros(rows,1);
-    m = zeros(rows,1);
+    n_sensor = length(y_analyse);
+    t{n_sensor} = [];
+    value = t;
     
-    t = t_poly(1:end-1);
-    value = y_poly(:,1:end-1);
-    
-    for i=1:rows
-       [pol, S] = polyfit(t, value(i,:), degree); 
-       
-       m(i) = polyval(pol(1:end-1), t_poly(end));
-       [next, SQM] = polyval(pol, t_poly(end),S);
-       
-       error(i) = next-y_poly(i,end);
-       sigma(i) = SQM;
-       
+    y_next = t;
+    for i=1:n_sensor
+        y_next{i} = zeros(rows(i),1);
+        t{i} = t_analyse{i}(start:end-1);
+        value{i} = y_analyse{i}(:,start:end-1);
     end
     
-    v_next = y_poly(:,end) + error;
+    variation = y_next;
+    
+    m = y_next{end};
+    
+    for i=1:n_sensor
+        for j=1:rows(i)
+            [pol, S] = polyfit(t{i}, value{i}(j,:), degree);
+        
+            if i==n_sensor
+                m(j) = polyval(pol(1:end-1), t_analyse{i}(end));
+            end
+            next = polyval(pol, t_analyse{i}(end),S);
+       
+            variation{i}(j) = next-y_analyse{i}(j,end);
+        end
+        y_next{i} = y_analyse{i}(:,end) + variation{i};
+    end
 end

@@ -32,7 +32,7 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,sk,
        Data.(type).forest=IsolationF(Data.(type).dati(1:idx,:), NumTree, NumSub);
        h=0;
        s=0;
-       Abnormalities=0;
+       Abnormalities=zeros(points,1);
        last=Abnormalities(idx);
        Abnormal=any(Abnormalities);
        posOfAnomaly=find(Abnormalities==1);
@@ -62,7 +62,7 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,sk,
            Data.(type).forest=IsolationF(Data.(type).dati(1:idx,:), NumTree, NumSub);
            h=0;
            s=0;
-           Abnormalities=0;
+           Abnormalities=zeros(points,1);
            last=Abnormalities(idx);
            Abnormal=any(Abnormalities);
            posOfAnomaly=find(Abnormalities==1);

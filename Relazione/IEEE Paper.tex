@@ -211,6 +211,9 @@ This part contains classes and functions to structure data in a prioritized way,
 to avoid unnecessary controls over sensor that are less likely to give data representing a true anomaly
 
 \section{System Values Update}
+The intantion is to build a real time program. To do this, the Bag manager has to adjust the reading time interval based on the time needed for the previous cicle.
+For this reason, keeping the time of a balanced cicle is extremely crucial, so that t he function \(OptimizeParameter()\)
+keeps track of it and set the parameter of the various components based on the previous values and the variation of time that it's involved in all the program.
+The main idea is that if the program is fast enough, the algorithms can be even more precise otherwise they can be relaxed a bit.
 
-\subsection{To do}
 \end{document}
