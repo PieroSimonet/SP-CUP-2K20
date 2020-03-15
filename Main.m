@@ -8,7 +8,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
-bagFile = bagManager(file2);
+bagFile = bagManager(file3);
 anomaly = AnomalyDetection();
 
 %% Vettori per i test
@@ -27,9 +27,6 @@ while not(bagFile.LastTimeDone())
         %        {i,3}: tipologia dato
         data = bagFile.getData();
     
-    % Verifica se e' possibile poter attivare il kalman
-        % kalman_ok = kalman_activation(data);
-    
     % Controllo tutti i sensori
         % se in bagFile ci sono piu' sensori da controllare che quelli
         % principali sostituire n_sensor con il numero di sensori principali e
@@ -41,18 +38,18 @@ while not(bagFile.LastTimeDone())
             % Picchi
             [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
             
-            n_analysed(j,i) = length(peak_anomaly) - already_analyzed;
+            n_analysed(j,i) = length(peak_anomaly{1}) - already_analyzed;
             
         if not(already_analyzed)
             % Foresta
-                numElementForest = length(data{i,3}(1));
-                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), v_forest');
+                %numElementForest = length(data{i,3}(1));
+                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), (v_forest{1})');
             
             % Aggiornamento riscontro picchi
-                anomaly = anomaly.update(peak_anomaly, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
+                anomaly = anomaly.update(peak_anomaly{1}, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
             
             % variabili aggiuntive per test
-                see = update(see, peak_anomaly, s, y_calc, v_forest, data{i,3}(1));
+                see = update(see, peak_anomaly{1}, s, y_calc{1}, v_forest, data{i,3}(1));
             
         end
     end
@@ -71,7 +68,7 @@ while not(bagFile.LastTimeDone())
     
     % Per ora segna solo la differenza di tempo tra la chiamata e la
     % precendete
-    [numForest, ~, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
+    [numForest, numElementForest, degree, num, gap, gap_sva, diffTime] = OptimizeParameter();
     
     % output funzione di ottimizzazione parametri
     new_values(j-1,:) = [numForest, numElementForest, degree, num, gap, gap_sva, diffTime];

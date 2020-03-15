@@ -1,123 +1,98 @@
-%% Input
-% t         - time vector                                               [double[]]
-% y         - vector of values of data_type element                     [double[]]
-% data_type - type of data                                              [String]
-%           - particular cases : "sva_l" (space-velocity-acceleration)
-%                                "sva_a" (angle-angular velocity-
-%                                         angular acceleration)
-% degree    - max degree during poly fit evaluation                     [int]
-% num       - number of elements evaluating during polyfit              [int]
-% gap       - maximum permissible percentage error                      [double]
-% gap_sva   - max variation to identify a constant element              [double]
- 
-%% Output
- 
-% already_analysed  - true if all values of the corresponding data_type are         [Boolean]
-%                     already analysed
-% anomaly           - vector of anomalies of the data_type's last entered elements  [Boolean[]]
-%                   - or if the last element of t is anomaly
-% start             - corresponding sample number of the first elements of anomaly  [int]
-% error             - error of not evaluated elements (y_measured-y_predicted)      [double[]]
-% y_next            - prediction of not evaluated elements                          [double[]]
- 
-%% Function
-function [already_analysed, anomaly, start, error, y_next] = FindPeaksWrapper(t, y, data_type, degree, num, gap, gap_sva)
+%% TO DO
+
+% out [already_analysed, data_type]
+function [already_analysed, anomaly_out, first_index_out, variation, y_calc, data_type] = FindPeaksWrapper(t, y, type, degree, num, gap, gap_kalman)
     
-    persistent dataType;
-    persistent anomalyArray;
+    % general variables
+    [rows_input, columns_input] = size(y);
     
-    % var - 1st column: varp_error of data_type elements
-    %       2nd column: var2_error of data_type elements
-    persistent var;
+    % dataType - {i,1} type of data evaluated
+    %          - {i,2} number of dimension
     
-    % matrix - 1st columns: Pn_2 of sva_l and sva_a elements
-    %          2nd columns: Rn of sva_l and sva_a elements
-    persistent matrix;
-    
+    persistent dataType;    
+    persistent varp;
+    persistent var2;
+    persistent Pn_2;
+    persistent Rn;
+    persistent n_cycle_kalman;
+    persistent anomaly;
+
+    %% Initialization system variables
     if isempty(dataType)
-        dataType{1} = data_type;    % type of data
-        anomalyArray{1,1} = 0;      % number of elements analysed
-        anomalyArray{1,2} = [];     % anomaly vector of data_type
-        [rows, ~] = size(y);
-        var{1,1} = zeros(rows+1,1); % varp_error
-        var{1,2} = zeros(rows,1);   % var2_error
-        if (data_type == "sva_l")||(data_type == "sva_a")
-            % Pn_2 and Rn
-            matrix{1,1} = 10*eye(rows); % Pn_2
-            matrix{1,2} = eye(rows);    % Rn --------------------------------------------------------------------
-        end
+        dataType{1,1} = type;
+        dataType{1,2} = rows_input;
+        varp{1} = zeros(rows_input+1,1);
+        var2{1} = zeros(rows_input,1);
+        Pn_2{1} = eye(rows_input); %---------------------------------------
+        Rn{1} = eye(rows_input); %-----------------------------------------
+        n_cycle_kalman(1) = 0;
+        anomaly{1} = [];
     end
     
-    already_analysed = false;
+    %% Search
     index = 0;
     
-    for i=1:length(dataType)
-        if dataType{i} == data_type
+    [rows_data, ~] = size(dataType);
+    
+    for i=1:rows_data
+        if dataType{i,1} == type
             index = i;
+            break
         end
     end
     
-    % new data_type element
+    %% New element
     if index == 0
-        index = length(dataType)+1;
-        dataType{index} = data_type;
-        anomalyArray{index,1} = 0;
-        anomalyArray{index,2} = [];
-        [rows, ~] = size(y);
-        var{index,1} = zeros(rows+1,1); % varp_error
-        var{index,2} = zeros(rows,1); % var2_error
-        
-        % check if is sva_l or sva_a
-        if (data_type == "sva_l")||(data_type == "sva_a")
-            matrix{index,1} = 10*eye(rows); % Pn_2
-            matrix{index,2} = eye(rows); % Rn --------------------------------------------------------------------
-        end
+        index = rows_data+1;
+        dataType{index,1} = type;
+        dataType{index,2} = rows_input;
+        varp{index} = zeros(rows_input+1,1);
+        var2{index} = zeros(rows_input,1);
+        Pn_2{index} = eye(rows_input); %-----------------------------------
+        Rn{index} = eye(rows_input); %-------------------------------------
+        n_cycle_kalman(index) = 0;
+        anomaly{index} = [];
     end
     
-    % if is already analysed return to Main
-    if anomalyArray{index,1} >= length(t)
+    %% Already analysed
+    already_analysed = false;
+    
+    if length(anomaly{index})>= columns_input %----------------------------
         already_analysed = true;
-        % return if last element of t is anomaly
-        anomaly = anomalyArray{index,2}(length(t));
-        start = 0;
-        [rows, ~] = size(y);
-        error = zeros(rows,1);
-        y_next = y(:,end);
+        anomaly_out{1} = anomaly{index}(columns_input);
+        first_index_out = columns_input;
+        variation = 0;
+        y_calc = 0;
+        data_type{1,1} = dataType{index,1};
+        data_type{1,2} = dataType{index,2};
         return
     end
     
-    % initialization (increase efficiency)
-    [rows, ~] = size(y);
-    columns = length(t)-anomalyArray{index,1};
-    error = zeros(rows,columns);
-    y_next = zeros(rows,columns);
-    
-    if (dataType{index} == "sva_l")||(dataType{index} == "sva_a")
-        anomaly = zeros(3, columns);
-    else
-        anomaly = zeros(1, columns);
-    end
-    
-    % Update variables and calc of y_next, error and anomaly
-    for i= (anomalyArray{index,1}+1):length(t)
+    %% Fill data_type and peaks search
+    data_type{1,1} = dataType{index,1};
+    data_type{1,2} = dataType{index,2};
+    varp_tmp{1} = varp{index};
+    var2_tmp{1} = var2{index};
+    Pn_2_tmp{1} = Pn_2{index};
+    Rn_tmp{1} = Rn{index};
         
-        if (dataType{index} == "sva_l")||(dataType{index} == "sva_a")
-            % find peaks with Kalman filter (specific calc cases)
-            [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}, matrix{index,1}] = find_peaks_sva(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2}, gap_sva, matrix{index,1}, matrix{index,2});
-        else
-            % find peaks without Kalman filter (no specific model)
-            [anomaly_tmp, y_next_tmp, error_tmp, var{index,1}, var{index,2}] = find_peaks_general(t(:,1:i), y(:,1:i), degree, num, gap, var{index,1}, var{index,2});
-        end
+    y_calc{1} = [];
+    variation = y_calc;
+    anomaly_out = y_calc;
         
-        anomaly(i-anomalyArray{index,1}) = anomaly_tmp;
-        error(:,i-anomalyArray{index,1}) = error_tmp;
-        y_next(:,i-anomalyArray{index,1}) = y_next_tmp;
+    for i=length(anomaly{index})+1:columns_input
+        t_type{1} = t(1:i);
+    	y_type{1} = y(:,1:i);
+        [anomaly_tmp, y_calc_tmp, variation_tmp, varp_tmp, var2_tmp, Pn_2_tmp, n_cycle_kalman(index)] = find_peaks(t_type, y_type, data_type, degree, num, gap, gap_kalman, varp_tmp, var2_tmp, Pn_2_tmp, Rn_tmp, n_cycle_kalman(index));
+        y_calc{1} = [y_calc{1} y_calc_tmp{1}];
+        variation{1} = [variation{1} variation_tmp{1}];
+        anomaly_out{1} = [anomaly_out{1} anomaly_tmp{1}];
     end
+        
+    first_index_out = length(anomaly{index})+1;
+    anomaly{index} = [anomaly{index} anomaly_out{1}];
+    varp{index} = varp_tmp{1};
+    var2{index} = var2_tmp{1};
+    Pn_2{index} = Pn_2_tmp{1};
     
-    anomalyArray{index,2} = [anomalyArray{index,2} anomaly];
-    start = anomalyArray{index,1};
-    
-    % update number of verified elements
-    anomalyArray{index,1} = length(t);
- 
 end
