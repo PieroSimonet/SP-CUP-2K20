@@ -1,3 +1,4 @@
+
 addpath('./Find_peaks/');
 
 close all;
@@ -43,7 +44,7 @@ while not(bagFile.LastTimeDone())
         if not(already_analyzed)
             % Foresta
                 %numElementForest = length(data{i,3}(1));
-                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data{i,3}(1), (v_forest{1})', numElementForest);
+                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest,numElementForest, 0.7, data{i,3}(1), (v_forest{1})');
             
             % Aggiornamento riscontro picchi
                 anomaly = anomaly.update(peak_anomaly{1}, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
