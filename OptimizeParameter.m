@@ -87,12 +87,16 @@ function numElementForest = updateElementForest(diffTime)
     end
     if diffTime > 3
         elementForest = elementForest - 5;
-    elseif diffTime < 0.25
+    elseif diffTime < 0.70
         elementForest = elementForest + 15;        
     end
 
     if elementForest < 20
         elementForest = 20;
+    end
+
+    if elementForest > 60
+        elementForest = 60;
     end
 
     numElementForest = elementForest;
