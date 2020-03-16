@@ -9,7 +9,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
-bagFile = bagManager(file3);
+bagFile = bagManager(file1);
 anomaly = AnomalyDetection();
 
 %% Vettori per i test
@@ -37,21 +37,25 @@ while not(bagFile.LastTimeDone())
     for i=1:n_sensor
         %% Picchi e dati per IsolationForest
             % Picchi
+            
+        if not(isempty(data{i,1}))
+
             [already_analyzed, peak_anomaly, first_index_peak, v_forest, y_calc] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_sva);
             
             n_analysed(j,i) = length(peak_anomaly{1}) - already_analyzed;
             
-        if not(already_analyzed)
-            % Foresta
-                %numElementForest = length(data{i,3}(1));
-                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest,numElementForest, 0.7, data{i,3}(1), (v_forest{1})');
-            
-            % Aggiornamento riscontro picchi
-                anomaly = anomaly.update(peak_anomaly{1}, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
-            
-            % variabili aggiuntive per test
-                see = update(see, peak_anomaly{1}, s, y_calc{1}, v_forest, data{i,3}(1));
-            
+            if not(already_analyzed)
+                % Foresta
+                    %numElementForest = length(data{i,3}(1));
+                    [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest,numElementForest, 0.7, data{i,3}(1), (v_forest{1})');
+                
+                % Aggiornamento riscontro picchi
+                    anomaly = anomaly.update(peak_anomaly{1}, first_index_peak, forest_anomaly, position_anomaly, data{i,3}(1));
+                
+                % variabili aggiuntive per test
+                    see = update(see, peak_anomaly{1}, s, y_calc{1}, v_forest, data{i,3}(1));
+                
+            end
         end
     end
     
@@ -88,21 +92,22 @@ new_values
 [rows, ~] = size(see);
 
 for i=1:rows
+    if not(isempty(data{i,1}))
     
-    [rows2, ~] = size(see{i,3});
-    
-    figure
-    plot(see{i,1})
-    title(see{i,5})
-    
-    for j=1:rows2
+        [rows2, ~] = size(see{i,3});
+        
         figure
-        plot(see{i,3}(j,:), '-b'); % blu predetto
-        hold on
-        plot(data{i,1}(j,:), '-r'); % rosso misurato
+        plot(see{i,1})
         title(see{i,5})
+        
+        for j=1:rows2
+            figure
+            plot(see{i,3}(j,:), '-b'); % blu predetto
+            hold on
+            plot(data{i,1}(j,:), '-r'); % rosso misurato
+            title(see{i,5})
+        end
     end
-    
 end
 
 function see_new = update(see, peak_anomaly, s, y_calc, v_forest, data_type)
