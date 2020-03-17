@@ -66,7 +66,7 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
            end
            Data.(type).idx=Data.(type).idx+points-1;
            idx=Data.(type).idx;
-           if idx>numLastPoints
+           if idx>numLastPoints %creates a forest based only on the last numLastPoints points
                tail=idx-numLastPoints+1;
            else
                tail=1;
@@ -90,7 +90,7 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
            end
            Data.(type).idx=Data.(type).idx+points-1;
            idx=Data.(type).idx;
-           if idx>numLastPoints
+           if idx>numLastPoints %creates a forest based only on the last numLastPoints points
                tail=idx-numLastPoints+1;
                Data.(type).forest=IsolationF(Data.(type).dati(tail:idx,:), NumTree, NumSub);
                [Abnormalities,h,s]= AnomaliesFinder(Data.(type).forest,numLastPoints,sk);
