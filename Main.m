@@ -9,7 +9,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_sva, ~] = OptimizeParameter();
-bagFile = bagManager(file1);
+bagFile = bagManager(file2);
 anomaly = AnomalyDetection();
 
 %% Vettori per i test
