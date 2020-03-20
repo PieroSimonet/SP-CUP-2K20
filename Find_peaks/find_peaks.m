@@ -1,28 +1,47 @@
-%% TO DO
-% t         - {i} time vector of data_type {i,1} sensor
-% y         - {i} values of data_type{i,1} sensor
-% data_type - {i,1} type of data evaluated
-%           - {i,2} number of dimension
-% degree    - int
-% nume      - int
-% varp      - {i} varp of data_type{i,1} sensor
-% var2      - {i} var2 of data_type{i,1} sensor
-% Pn_1      - {i} Pn_1 of data_type{i,1} sensor
+%% Input
 
-function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_kalman] = find_peaks(t, y, data_type, degree, num, gap, gap_kalman, varp, var2, Pn_1, Rn, n_cycle_kalman)
+% t                 - time vector of sensors                                [cell{double[]}]
+% y                 - sensors measurement vectors                           [cell{double[]}]
+% data_type         - general description of evaluated sensors              [cell{}]
+%                     {i,1} type of sensor evaluated                        [String]
+%                     {i,2} dimension of values of corresponding sensor     [int]
+% degree            - maximum degree for polyfit evaluation                 [int]
+% num               - maximum number of elements used in polyfit            [int]
+%                     evaluation
+% gap               - minimum percentage variation to report an anomaly     [double]
+% gap_k             - maximum coefficient of linear regression to           [double]
+%                     determine constant behaviour
+% varp              - average percentage sensors variation                  [cell{int double[]}]
+% var2              - variance of sensors                                   [cell{double[]}]
+% Pn_1              - covariance matrix of previous process                 [cell{double[]}]
+% Rn                - precision matrix of sensors                           [cell{double[]}]
+% n_cycle_k         - number of consecutive cycle of Kalman evaluation      [int]
+
+%% Output
+
+% anomaly           - anomalies in the last captured data set               [cell{Boolean[]}]
+% y_calc            - output vector of the predicted values                 [cell{double[]}]
+% variation         - differences between predicted and measured values     [cell{double[]}]
+% varp              - update of input
+% var2              - update of input
+% Pn_2              - update of input
+% n_cycle_k         - update of input
+
+%% Function
+function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(t, y, data_type, degree, num, gap, gap_k, varp, var2, Pn_1, Rn, n_cycle_k)
     
-    % general number of sensors
-    [n_sensors_g, ~] = size(data_type);
-    analyse = ones(1,n_sensors_g);
-    columns = zeros(1,n_sensors_g);
+    % n_sensors - number of sensors to analyse                              [int]
+    [n_sensors, ~] = size(data_type);
+    analyse = ones(1,n_sensors);
+    columns = zeros(1,n_sensors);
     rows = columns;  
     
-    anomaly{n_sensors_g} = [];
+    anomaly{n_sensors} = [];
     y_calc = anomaly;
     variation = anomaly;
     Pn_2 = anomaly;
     
-    for i=1:n_sensors_g
+    for i=1:n_sensors
         [rows_i, columns_i] = size(y{i});
         if columns_i < degree+3
             anomaly{i} = false;
@@ -63,12 +82,11 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_kalman] = find_p
     % variation_p - difference between measure e y_next_p
     % sigma - precision of polyval evaluation
     % m - coefficient of linear regression
-    [y_next_p, variation_p, m] = poly_fit(t_analyse, y_analyse, start, rows, degree);
-    % kalman activation
-    check_k = sum(abs(m)>gap_kalman);
+    [y_next_p, variation_p, m] = poly_fit(t_analyse, y_analyse, start, rows, degree, n_sensors);
+    check_k = sum(abs(m)>gap_k);
     
     if check_k == 0
-        n_cycle_kalman = n_cycle_kalman + 1;
+        n_cycle_k = n_cycle_k + 1;
         
         t_kalman(n_sensors) = 0;
         y_kalman = zeros(sum(rows),2);
@@ -97,10 +115,10 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_kalman] = find_p
         [anomaly_k, ~, ~] = peak_presence(variation_k, y_next_k, y_last, gap, n_sensors);
         
     else
-        n_cycle_kalman = 0;
+        n_cycle_k = 0;
         Pn_2{length(Pn_1)} = [];
         for i=1:length(Pn_1)
-            Pn_2{i} = eye(size(Pn_1{i}));%---------------------------------
+            Pn_2{i} = 2*eye(size(Pn_1{i}));
         end
     end
     
@@ -111,7 +129,7 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_kalman] = find_p
         varp{analyse(i)} = varp_tmp{i};
         var2{analyse(i)} = var2_tmp{i};
         
-        if n_cycle_kalman>3
+        if n_cycle_k>3
             anomaly{analyse(i)} = anomaly_p{i} | anomaly_k{i};
             which = (abs(variation_p{i})<abs(variation_k{i}));
             variation{analyse(i)} = which.*variation_p{i}+(1-which).*variation_k{i};
