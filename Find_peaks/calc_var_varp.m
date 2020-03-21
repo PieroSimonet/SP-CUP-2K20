@@ -23,7 +23,7 @@ function [varp, varp_short, var2] = calc_var_varp(variation, y_next_wz, varp, va
     
     % Update variables and new averages
     n = n+1;
-    varp_short = (((varp_short + abs(variation))./abs(y_next_wz)))./n;
+    varp_short = (varp_short + abs(variation)./abs(y_next_wz))./n;
     var2 = (var2 + variation.^2)./n;
     
     varp(1) = n;

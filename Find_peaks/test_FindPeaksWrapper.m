@@ -7,11 +7,10 @@ else
 end
 
 clear all
-addpath('./Find_peaks')
 
 %% Varibili sistema
 % n_var - numero di variabili da inserire nella ricerca
-    n_var = 3;
+    n_var = 1;
 
 % rows - numero di dimensioni di ogni vettore
     rows(3) = 0;
@@ -42,7 +41,7 @@ addpath('./Find_peaks')
     
 %% Variabili ricerca picchi
 % degree -> grado polyfit (sopra al 3 genera warning)
-    degree = 1;
+    degree = 2;
 % gap -> massima percentuale di variazione accettabile
     gap = 0.5;
 % num -> numero di elementi da inserire nel polyfit
@@ -82,9 +81,9 @@ addpath('./Find_peaks')
 
 %% Esempi test
 % Spazio costante
-    %y{3} = zeros(rows(3),N) + n{3};
-    %y{2} = zeros(rows(2),N) + n{2};
-    %y{1} = s0 + n{1};
+    y{3} = zeros(rows(3),N) + n{3};
+    y{2} = zeros(rows(2),N) + n{2};
+    y{1} = s0 + n{1};
 
 % Velocità costante
     %y{3} = zeros(rows(3),N) + n{3};
@@ -97,13 +96,13 @@ addpath('./Find_peaks')
     %y{1} = s0 + v0*t{1} + 0.5*a0*t{1}.^2 + n{1};
     
 % Accelerazione variabile
-    y{3} = a0*t{3}+ n{3};
-    y{2} = v0 + 0.5*a0*t{2}.^2 + n{2};
-    y{1} = s0 + v0*t{1} + (1/6)*a0*t{1}.^2+ n{1};
+    %y{3} = a0*t{3}+ n{3};
+    %y{2} = v0 + 0.5*a0*t{2}.^2 + n{2};
+    %y{1} = s0 + v0*t{1} + (1/6)*a0*t{1}.^2+ n{1};
    
 %% Valore di amplificazione (picchi)
 % amps_peak -> ampiezza picchi anomali
-    amp_peaks = 1.5;
+    amp_peaks = 15;
 
 %% Ricerca anomalia - inizializzazioni vettori
 % vettori dei valori e dei tempi
