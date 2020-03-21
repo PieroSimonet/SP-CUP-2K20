@@ -46,9 +46,9 @@ function kalman_ok = multi_kalman_ok(data, num, kalman_ok)
     l_index = k_index;
     % F_index - average sampling rate of id_kalman sensors [double[]]
     F_index = k_index;
-    % check_k - true if a id_kalman element can be associated to its        [Boolean[]]
+    % check_nk - true if a id_kalman element can be associated to its       [Boolean[]]
     %           next one
-    check_k = k_index;
+    check_nk = k_index;
     % common_elem - number of common cycles between sensors for             [int[]]
     %               multi-Kalman evaluation
     common_elem = zeros(rows_id, 1);
@@ -79,8 +79,8 @@ function kalman_ok = multi_kalman_ok(data, num, kalman_ok)
                 % Two contiguous element exist
                 test1 = abs(T_index(j,i)-T_index(j,i+1))<=abs(n_elem_permitted/min(F_index(j,i),F_index(j,i+1)));
                 test2 = abs(F_index(j,i)-F_index(j,i+1))<= min(F_index(j,i),F_index(j,i+1))/num;
-                check_k(j,i) = (test1&&test2)||check_k(j,i);
-                check_k(j,i+1) = (test1&&test2);
+                check_nk(j,i) = (test1&&test2)||check_nk(j,i);
+                check_nk(j,i+1) = (test1&&test2);
                 
                 common_elem(j) = min([l_index(j,i), l_index(j,i+1)]);
             end
@@ -90,9 +90,9 @@ function kalman_ok = multi_kalman_ok(data, num, kalman_ok)
     for j=1:2
         % start_k - id_kalman starting sensor index for multi-Kalman        [int]
         %           evaluation
-        start_k = find(check_k(j,:),1);
+        start_k = find(check_nk(j,:),1);
         % finish_k - id_kalman end sensor index for multi-Kalman evaluation [int]
-        finish_k = find(check_k(j,:),1,'last');
+        finish_k = find(check_nk(j,:),1,'last');
         
         % Update kalman_ok
         if ~isempty(start_k) && ~isempty(finish_k)

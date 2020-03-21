@@ -1,25 +1,24 @@
 %% Input
-%               
-% T             - time vector (difference between two last measures)        [double[]]
-% Y             - sensors measurement vectors (only penultimate and third   [double[]]
-%                 last measures)
-% Pn_1          - covariance matrix of previous process                     [double[]]
-% Rn            - precision matrix of sensors                               [double[]]
-% Q             - covariance matrix of measures                             [double[]]
-% data_type     - general description of evaluated sensors                  [cell[[String, int]]]
-%                 {i,1} type of sensor evaluated
-%                 {i,2} dimension of measured values of corresponding sensor
+
+% t_kalman          - vector of time used by Kalman evaluation              [double[]]
+% y_kalman          - sensor measurament vector used by Kalman evaluation   [double[]]
+% Pn_1              - covariance matrix of previous process                 [double[]]
+% Rn                - precision matrix of sensors                           [double[]]
+% Q                 - covariance matrix of measures                         [double[]]
+% data_type         - general description of evaluated sensors              [cell{}]
+%                     {i,1} type of sensor evaluated                        [String]
+%                     {i,2} dimension of values of corresponding sensor     [int]
 
 %% Output
 
-% y_next_k      - predicted values vector by Kalman evaluation              [double[]]
-% Pn_2          - covariance variation of process                           [cell[double[]]]
+% y_next_k          - predicted values vector by Kalman evaluation          [double[]]
+% Pn_2              - covariance variation of process                       [double[]]
 
 %% Function
-function [y_next_k, Pn_2] = kalman(T, Y, Pn_1, Rn, Q, data_type)
+function [y_next_k, Pn_2] = kalman(t_kalman, y_kalman, Pn_1, Rn, Q, data_type)
     
     % Average measurament times
-    T_m = sum(T)/length(T);
+    T_m = sum(t_kalman)/length(t_kalman);
     
     [rows_data,~] = size(data_type);
     F = [];
@@ -42,7 +41,7 @@ function [y_next_k, Pn_2] = kalman(T, Y, Pn_1, Rn, Q, data_type)
     Kn = Pn_1/(Pn_1 + Rn);
     
     % State update equation
-    y_now = Y(:,1) + Kn*(Y(:,2)-Y(:,1));
+    y_now = y_kalman(:,1) + Kn*(y_kalman(:,2)-y_kalman(:,1));
     
     % Covariance of process update
     Pn = (eye(size(Kn)) - Kn)*Pn_1*((eye(size(Kn)) - Kn)') + Kn*Rn*Kn';
