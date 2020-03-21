@@ -16,6 +16,7 @@ classdef bagManager
         LinearAccelerationIndex
         TwistIndex
         StatusIndex
+        CurrentIndex
         LastTimeDone
     end
     
@@ -35,6 +36,7 @@ classdef bagManager
             obj.LinearAccelerationIndex = 0;
             obj.StatusIndex = 0;
             obj.TwistIndex = 0;
+            obj.CurrentIndex = 0;
             obj.LastTimeDone = false;
             obj = obj.updateData();
         end
@@ -74,15 +76,28 @@ classdef bagManager
                 obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "voltage";
+
+                obj.Data{obj.MainIndex + 1,1} = zeros(1,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex + 1,1}(i) = message{i}.Current;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex + 1 ,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex +1 ,3} = "Current";
+
+
                 haveUpdate = true;
             end
             % update numer of elements
             if haveUpdate
                 obj.VoltageIndex = length(message);
+                obj.CurrentIndex = length(message);
             end
             
             % new row for the next element to load
-            obj.MainIndex = obj.MainIndex + 1;
+            obj.MainIndex = obj.MainIndex + 2;
 
 
             %% extrapolation position
