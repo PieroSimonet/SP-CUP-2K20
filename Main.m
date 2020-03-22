@@ -108,6 +108,8 @@ n_analysed
 % valore sensori
 new_values
 
+
+sum(new_values(:,7))
 %% Plot e controlli
 
 function tmp = plot_all(see,data)
