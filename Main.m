@@ -1,11 +1,11 @@
 %% Check for grafics clean
-if exist('tmp','var')
-    for i=1:tmp-1
-        clf(figure (i));
-    end
-else
-    close all
-end
+%if exist('tmp','var')
+%    for i=1:tmp-1
+%        clf(figure (i));
+%    end
+%else
+%    close all
+%end
 %% Start of Main
 addpath('./Find_peaks/');
 addpath('./Tree/');
@@ -19,7 +19,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_k, ~] = OptimizeParameter();
-bagFile = bagManager(file3);
+bagFile = bagManager(file2);
 anomaly = AnomalyDetection();
 kalman_ok = zeros(2,4);
 treesManager = TreesManager();

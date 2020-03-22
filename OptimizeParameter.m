@@ -46,8 +46,8 @@ function newGap = updateGap(diffTime)
         Gap = Gap  - 0.5;
     end
 
-    if Gap < 0.05
-        Gap = 0.05;
+    if Gap < 0.1
+        Gap = 0.1;
     end
 
     if Gap > 0.7
@@ -91,8 +91,8 @@ function numElementForest = updateElementForest(diffTime)
         elementForest = elementForest + 15;        
     end
 
-    if elementForest < 20
-        elementForest = 20;
+    if elementForest < 30
+        elementForest = 30;
     end
 
     if elementForest > 60
