@@ -6,15 +6,15 @@ classdef TreesManager
 		PowTree
 
 		GeneralTree
-		GeneralTree_desc % tree only of its name
+		GeneralTree_desc% tree only of its name
 
 		accel_iterator
 		pos_iterator
 		pow_iterator
 		gen_iterator
 
-		use_map		% bool
-		name_map	% map
+		use_map% bool
+		name_map% map
 
 	end
 
@@ -29,10 +29,11 @@ classdef TreesManager
 		function obj = TreesManager(debugLog)
 
 			if (nargin == 0)
-				[obj.AccelTree, obj.PosTree, obj.PowTree,obj.GeneralTree] = InitTrees();
+				[obj.AccelTree, obj.PosTree, obj.PowTree, obj.GeneralTree] = InitTrees();
 			else
-				[obj.AccelTree, obj.PosTree, obj.PowTree,obj.GeneralTree] = InitTrees(debugLog);
+				[obj.AccelTree, obj.PosTree, obj.PowTree, obj.GeneralTree] = InitTrees(debugLog);
 			end
+
 			obj.GeneralTree_desc = obj.NodeTreeToNameTree(obj.GeneralTree);
 			obj.accel_iterator = obj.AccelTree.breadthfirstiterator;
 			obj.pos_iterator = obj.PosTree.breadthfirstiterator;
@@ -43,74 +44,78 @@ classdef TreesManager
 		end
 
 		function obj = UseMap(obj, whatToSet)
+
 			if (nargin == 1)
 				obj.use_map = true;
 			else
 				obj.use_map = whatToSet;
 			end
+
 		end
 
 		% Set Name Map used to push data to trees
-		function obj = SetNameMap(obj,map)
+		function obj = SetNameMap(obj, map)
 			obj.name_map = map;
 			obj = obj.UseMap();
 		end
 
 		% Must populate trees from data parameter
-		function obj = PushData(obj,data)
+		function obj = PushData(obj, data)
 
 			persistent previndexes;
 
-			if(isempty(previndexes))
-				previndexes = 1;
+			props = data(:, 3);
+            
+			if (isempty(previndexes))
+				previndexes = ones(length(props));
 			end
 
-			props = data(:,3);
 
 			% loop through all props to set
-			for i = 1:1
+			for i = 1:length(props)
 				name = props{i};
-				% use map? 
+				% use map?
 				if obj.use_map
+
+					if (~isKey(obj.name_map, name))
+						% if we're using map, and it does not contain element, skip this for now
+						continue;
+					end
+
 					name = obj.name_map(name);
 				end
-				j_len = data(i,1);
-				for j = previndexes(i):length(j_len)
-					l_data = data(j,[2 1]);
-					obj.GeneralTree = PushDataToTreeNode(obj.GeneralTree,obj.GeneralTree_desc,name,l_data);
+
+				j_len = data(i, 1);
+				maxindex = length(j_len);
+
+				for j = previndexes(i):maxindex
+					l_data = data(j, [2 1]);
+					obj.GeneralTree = PushDataToTreeNode(obj.GeneralTree, obj.GeneralTree_desc, name, l_data);
 				end
+
+				previndexes(i) = maxindex;
 			end
+
 		end
 
-		function PushDataToTree(tree,t_d,nodeName,timedData)
-			PushDataToTreeNode(tree,t_d,nodeName,timedData)
+
+		function obj =  PushPeaksData(obj,peakdata)
+			nodeName = peakdata{1,2};
+			if obj.use_map
+				nodeName = obj.name_map(nodeName);
+			end
+
+			originalTime = obj.GeneralTree.get(GetNodeIndex(obj.GeneralTree,nodeName)).time;
+			obj.GeneralTree = PushPeakIndexToTreeNode(obj.GeneralTree, obj.GeneralTree_desc,nodeName,peakdata{1},originalTime);
 		end
 
-		function anomaly = SearchTree(obj,handler)
+		function anomaly = SearchTree(obj, handler)
 			anomaly = false;
 
-			n = SearchTreeInternal(obj.GeneralTree,obj.gen_iterator,handler);
+			n = TreesManager.SearchTreeInternal(obj.GeneralTree, obj.gen_iterator, handler);
 
-			if(~isempty(n))
+			if (~isempty(n))
 				anomaly = true;
-			end
-		end
-
-		function node = SearchTreeInternal(tree, iterator, anomaly_find_handler)
-
-			for i = iterator
-				% get current node
-				node = tree.get(i);
-				%skip if empty
-				if (isempty(node))
-					continue;
-				end
-
-				%apply search handler
-				if (anomaly_find_handler(node))
-					return;
-				end
-
 			end
 
 		end
@@ -122,6 +127,7 @@ classdef TreesManager
 			obj.PowTree = TreesManager.Reset(obj.PowTree);
 		end
 
+		% Display trees content
 		function disp(obj)
 			disp(obj.AccelTree.tostring);
 			disp(obj.PosTree.tostring);
@@ -130,27 +136,56 @@ classdef TreesManager
 		end
 
 	end
-	
+
 	methods (Static)
+        
+        function node = SearchTreeInternal(tree, iterator, anomaly_find_handler)
+
+			for i = iterator
+				% get current node
+				node = tree.get(i);
+				%skip if empty
+				if isempty(node) || ischar(node)
+					continue;
+				end
+
+				if isempty(node.data)
+					continue;
+				end
+
+				%apply search handler
+				if (anomaly_find_handler(node))
+					return;
+				end
+
+			end
+
+        end
+        
+		% convert a mixed string/node tree to a string tree
 		function na_tree = NodeTreeToNameTree(no_tree)
 			na_tree = tree(no_tree);
 			na_tree = na_tree.treefun(@TreesManager.ifNodeGetName);
 		end
 
+		%if obj is notde get its name, else keep the object
 		function str = ifNodeGetName(obj)
+
 			if isobject(obj)
-			% Object with 'name' property -> get it
+				% Object with 'name' property -> get it
 				if (isprop(obj, 'name'))
 					str = obj.name;
 					return;
 				end
+
 			end
 
 			str = obj;
 		end
-	% end
 
-	% methods (Static)
+		% end
+
+		% methods (Static)
 
 		function tree = Reset(tree)
 			tree = tree(tree, 'clear');

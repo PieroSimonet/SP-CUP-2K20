@@ -2,7 +2,7 @@ function str = contentToString(content)
 	% Subfunction to turn any content into a decent string
 	if isempty(content)
 		% Nothing -> print the void symbol
-		str = '�';
+		str = 'null';
 	elseif ~ischar(content)
 
 		if numel(content) == 1
@@ -31,6 +31,13 @@ function str = contentToString(content)
 
 				% Cell with one element -> append cell and print element
 				str = ['cell:' contentToString(content{1})];
+
+			elseif isa(content, 'node')
+				% tmp = [ "a","b"];
+					% string(content.name),
+					% string(['time: ' contentToString(content.time)]),
+					% string(['data: ' contentToString(content.data)])]
+				str = ['node ' contentToString(content.name)];
 			elseif isobject(content)
 				% Object with 'name' property -> print it
 				if (isprop(content, 'name'))
