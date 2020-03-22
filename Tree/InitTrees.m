@@ -45,8 +45,6 @@ function [accel_tree, pos_tree, pow_tree general_tree] = InitTrees(debugLog)
 	% a_t_index = GetNodeIndex(general_tree, 'accel_tree');
 	general_tree = general_tree.graft(entry_pt,pow_tree);
 	
-	
-	general_tree = general_tree.graft()
 
 	if (nargin > 0 && debugLog)
 		disp(accel_tree.tostring);
