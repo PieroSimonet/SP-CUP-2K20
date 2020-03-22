@@ -226,31 +226,7 @@ classdef bagManager
             end
             obj.MainIndex = obj.MainIndex + 1;
             
-            %% extrapolation state
-            bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/state');
-            message = readMessages(bagTmp,'DataFormat','struct');
-            t = bagTmp.MessageList.Time;
-            haveUpdate = false;
-            
-        
-                for i=obj.StatusIndex:length(message)
-                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.SystemStatus;
-                    haveUpdate = true;
-                end
-                
-                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
-                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
-                % obj.Data{obj.MainIndex,3} - data_type
-                obj.Data{obj.MainIndex,3} = "State";
-                
-                                
-             
-            if haveUpdate
-                obj.StatusIndex = length(message);
-            end
-            
-            obj.MainIndex = obj.MainIndex + 1;
-
+           
             %% extrapolation gpsVel
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/global_position/raw/gps_vel');
             message = readMessages(bagTmp,'DataFormat','struct');

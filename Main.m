@@ -110,6 +110,8 @@ n_analysed
 % valore sensori
 new_values
 
+
+sum(new_values(:,7))
 %% Plot e controlli
 
 function tmp = plot_all(see,data)
@@ -183,7 +185,6 @@ function anom = peaksWrapper(node)
     t = node.t;
     y = node.data;
     typ = node.name;
-    [~,anom,~,~,~,~,~] = FindPeaksWrapper(t,y,typ,0,0,0,0,0);
+    [~, anom, ~, ~, ~, ~, ~] = FindPeaksWrapper(t,y,typ,0,0,0,0,0);
 
-    return;
 end
