@@ -20,23 +20,38 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
     NumTree = numTree; % number of isolation trees
     NumSub = maxPoint; % subsample size
     [points,~]=size(newEl);
+    
     if isempty(Data) %first access
+        
        Data.(type).old=[];%vector of anomalies already reported
        Data.(type).idx=1;
        idx=Data.(type).idx;
        [~,dim]=size(newEl(1,:));
        Data.(type).dati=zeros(maxPoint,dim);
+       
        for k=1:points
+           
            Data.(type).dati(idx+k-1,:)=newEl(k,:);%insertion of the new point
+           
        end
-       Data.(type).idx=Data.(type).idx+points-1;
+       
+       Data.(type).idx=Data.(type).idx+points-1;%index update
        idx=Data.(type).idx;
+       
+       %tail is the last observation inside forest
        if idx>numLastPoints
-            tail=idx-numLastPoints+1;
+           
+           tail=idx-numLastPoints+1;
+           
        else
+           
             tail=1;
+            
        end
+       %creation of the forest
        Data.(type).forest=IsolationF(Data.(type).dati(tail:idx,:), NumTree, NumSub);
+       
+       %setting outputs for the first call
        h=0;
        s=0;
        Abnormalities=zeros(points,1);
@@ -45,10 +60,11 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
        posOfAnomaly=find(Abnormalities==1);
        return
        
-    else
+    else %function alredy initialized
         
        campi=fields(Data);
        foundIt=0;
+       
        for tmp=1:length(campi)
            if campi{tmp}==type
                foundIt=1;
@@ -56,22 +72,35 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
        end
        
        if foundIt==0 %new type
+           
            Data.(type).old=[];%vector of anomalies already reported
            Data.(type).idx=1;
            idx=Data.(type).idx;
            [~,dim]=size(newEl(1,:));
            Data.(type).dati=zeros(maxPoint,dim);
+           
            for k=1:points
+               
                Data.(type).dati(idx+k-1,:)=newEl(k,:);%insertion of the new point
+               
            end
-           Data.(type).idx=Data.(type).idx+points-1;
+           
+           Data.(type).idx=Data.(type).idx+points-1;%index update
            idx=Data.(type).idx;
+           
            if idx>numLastPoints %creates a forest based only on the last numLastPoints points
+               
                tail=idx-numLastPoints+1;
+               
            else
+               
                tail=1;
+               
            end
+           
            Data.(type).forest=IsolationF(Data.(type).dati(tail:idx,:), NumTree, NumSub);
+           
+           %setting outputs for first call of this type of points
            h=0;
            s=0;
            Abnormalities=zeros(points,1);
@@ -82,34 +111,50 @@ function [last,Abnormal,posOfAnomaly, h, s]=IsolationForest(numTree,maxPoint,num
            
        else    %type already in the Data
            
-           Data.(type).idx=Data.(type).idx+1;
+           Data.(type).idx=Data.(type).idx+1;%index update
            idx=Data.(type).idx;
            
            for k=1:points
+               
                Data.(type).dati(idx+k-1,:)=newEl(k,:);%insertion of the new point
+               
            end
-           Data.(type).idx=Data.(type).idx+points-1;
+           
+           Data.(type).idx=Data.(type).idx+points-1;%index update
            idx=Data.(type).idx;
+           
            if idx>numLastPoints %creates a forest based only on the last numLastPoints points
+               
                tail=idx-numLastPoints+1;
+               
                Data.(type).forest=IsolationF(Data.(type).dati(tail:idx,:), NumTree, NumSub);
+               
                [Abnormalities,h,s]= AnomaliesFinder(Data.(type).forest,numLastPoints,sk);
-               Data.(type).old=Data.(type).old-points;
+               
+               Data.(type).old=Data.(type).old-points;%clear anomalies alredy reported
                temp=find(Data.(type).old>0);
                Data.(type).old=Data.(type).old(temp);
-               Abnormalities(Data.(type).old)=0;%clear anomalies alredy reported
+               Abnormalities(Data.(type).old)=0;
+               
                last=Abnormalities(numLastPoints);
                Abnormal=any(Abnormalities);
                posOfAnomaly=find(Abnormalities==1)+tail-1;
                Data.(type).old=[ Data.(type).old , posOfAnomaly'-tail+1];%update of the alredy reported anomalies vector
+               
            else
+               
                tail=1;
+               
                Data.(type).forest=IsolationF(Data.(type).dati(tail:idx,:), NumTree, NumSub);
+               
                [Abnormalities,h,s]= AnomaliesFinder(Data.(type).forest,idx,sk);
+               
                Abnormalities(Data.(type).old)=0;%clear anomalies alredy reported
+               %setting outputs
                last=Abnormalities(idx);
                Abnormal=any(Abnormalities);
                posOfAnomaly=find(Abnormalities==1);
+               
                Data.(type).old=[ Data.(type).old , posOfAnomaly'];%update of the alredy reported anomalies vector
            end 
        end

@@ -4,7 +4,7 @@ close all;
 x.a=randn(50,3);
 x.b=randn(50,3);
 for i=1:50
-   [last, Anomalia,posizioneA,h, s]=IsolationForest(100,50,30,0.6,"a",x.a(i,:));
+   [last, Anomalia,posizioneA,h, s]=IsolationForest(100,50,50,0.6,"a",x.a(i,:));
    disp(posizioneA);
 %     [last2, Anomalia2,posizioneA2,h2, s2]=IsolationForest(100,50,0.6,"b",x.b(i,:));
 %     disp(posizioneA2)
