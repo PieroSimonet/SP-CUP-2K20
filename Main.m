@@ -22,6 +22,7 @@ bagFile = bagManager(file1);
 anomaly = AnomalyDetection();
 kalman_ok = zeros(2,4);
 treesManager = TreesManager();
+treesManager = treesManager.SetNameMap(CreateTreeMap());
 
 %% Vettori per i test
 
