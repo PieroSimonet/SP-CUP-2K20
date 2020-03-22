@@ -11,7 +11,6 @@ addpath('./Find_peaks/');
 addpath('./Tree/');
 addpath('./Tree/Utils/');
 
-close all;
 clear all;
 
 run InizializeNameOfFiles.m;
@@ -19,7 +18,7 @@ run InizializeNameOfFiles.m;
 %% Inizializzazione variabili sistema
 
 [numForest, numElementForest, degree, num, gap, gap_k, ~] = OptimizeParameter();
-bagFile = bagManager(file2);
+bagFile = bagManager(file1);
 anomaly = AnomalyDetection();
 kalman_ok = zeros(2,4);
 treesManager = TreesManager();

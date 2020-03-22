@@ -43,10 +43,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     %            {i,2} dimension of values of corresponding sensor          [int]
     persistent dataType;
     
-    % varp - average percentage sensors variation                           [cell{int double[]}]
-    persistent varp;
-    
-    % var2 - variance of sensors                                            [cell{double[]}]
+    % var2 - average squared variance of sensors                            [cell{double[]}]
     persistent var2;
     
     % Pn_2 - covariance variation of process                                [cell{double[]}]
@@ -83,8 +80,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     if isempty(dataType)
         dataType{1,1} = type;
         dataType{1,2} = rows_input;
-        varp{1} = zeros(rows_input+1,1);
-        var2{1} = zeros(rows_input,1);
+        var2{1} = zeros(rows_input+1,1);
         Pn_2{1} = 2*eye(rows_input);
         Rn{1} = 0.1*eye(rows_input);
         n_cycle_k(1) = 0;
@@ -134,8 +130,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
         index = rows_data+1;
         dataType{index,1} = type;
         dataType{index,2} = rows_input;
-        varp{index} = zeros(rows_input+1,1);
-        var2{index} = zeros(rows_input,1);
+        var2{index} = zeros(rows_input+1,1);
         Pn_2{index} = 2*eye(rows_input);
         Rn{index} = 0.1*eye(rows_input);
         n_cycle_k(index) = 0;
@@ -210,7 +205,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
         kalman{2}{2}{id_kalman_a==type} = y;
         n_cycle_mk(2,2) = n_cycle_mk(2,2) +1;
         wait(2) = true;
-    end
+    end    
     
     %% Peaks search of general elements or not common data
     
@@ -221,7 +216,6 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     data_type_tmp{1,2} = dataType{index,2};
     
     % ..._tmp - corresponding temporary variables
-    varp_tmp{1} = varp{index};
     var2_tmp{1} = var2{index};
     Pn_2_tmp{1} = Pn_2{index};
     Rn_tmp{1} = Rn{index};
@@ -240,7 +234,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
 
         % ..._fp - elements derived from the find peaks analysis on
         %          type(variable) sensor
-        [anomaly_fp, y_calc_fp, variation_fp, varp_tmp, var2_tmp, Pn_2_tmp, n_cycle_k(index)] = find_peaks(t_s, y_s, data_type_tmp, degree, num, gap, gap_k, varp_tmp, var2_tmp, Pn_2_tmp, Rn_tmp, n_cycle_k(index));
+        [anomaly_fp, y_calc_fp, variation_fp, var2_tmp, Pn_2_tmp, n_cycle_k(index)] = find_peaks(t_s, y_s, data_type_tmp, degree, num, gap, gap_k, var2_tmp, Pn_2_tmp, Rn_tmp, n_cycle_k(index));
         y_calc_tmp{1} = [y_calc_tmp{1} y_calc_fp{1}];
         variation_tmp{1} = [variation_tmp{1} variation_fp{1}];
         anomaly_tmp{1} = [anomaly_tmp{1} anomaly_fp{1}];
@@ -250,7 +244,6 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     
     % Update general variables
     anomaly{index} = [anomaly{index} anomaly_tmp{1}];
-    varp{index} = varp_tmp{1};
     var2{index} = var2_tmp{1};
     Pn_2{index} = Pn_2_tmp{1};
     
@@ -258,7 +251,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     %% Multi-Kalman evaluation
     
     % Clear the memory of temporary variables
-    clearvars varp_tmp var2_tmp Pn_2_tmp Rn_tmp;
+    clearvars var2_tmp Pn_2_tmp Rn_tmp;
     
     % k_length - number of elements in kalman (variable) needed for         [int[]]
     %            multi_Kalman evaluation
@@ -275,14 +268,13 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
         
         % Initialization of cell{} element for multiple evaluation
         data_type{kalman_fill'*k_length,2} = [];
-        varp_tmp{kalman_fill'*k_length} = [];
-        var2_tmp = varp_tmp;
-        Pn_2_tmp = varp_tmp;
-        Rn_tmp = varp_tmp;
-        t_mk = varp_tmp;
-        y_mk = varp_tmp;
+        var2_tmp{kalman_fill'*k_length} = [];
+        Pn_2_tmp = var2_tmp;
+        Rn_tmp = var2_tmp;
+        t_mk = var2_tmp;
+        y_mk = var2_tmp;
         
-        y_calc = varp_tmp;
+        y_calc = var2_tmp;
         variation = y_calc;
         anomaly_out = y_calc;
         
@@ -293,7 +285,6 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
         for i=1:(kalman_fill'*k_length)
             data_type{i,1} = dataType{k_index(l_or_a,i+index_mk),1};
             data_type{i,2} = dataType{k_index(l_or_a,i+index_mk),2};
-            varp_tmp{i} = varp{k_index(l_or_a,i+index_mk)};
             var2_tmp{i} = var2{k_index(l_or_a,i+index_mk)};
             Pn_2_tmp{i} = Pn_2{k_index(l_or_a,i+index_mk)};
             Rn_tmp{i} = Rn{k_index(l_or_a,i+index_mk)};
@@ -307,7 +298,7 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
                 y_mk{j} = kalman{l_or_a}{2}{j}(:,1:i);
             end
             
-            [anomaly_k, y_calc_k, variation_k, varp_tmp, var2_tmp, Pn_2_tmp, n_cycle_mk(l_or_a,1)] = find_peaks(t_mk, y_mk, data_type, degree, num, gap, gap_k, varp_tmp, var2_tmp, Pn_2_tmp, Rn_tmp, n_cycle_mk(l_or_a,1));
+            [anomaly_k, y_calc_k, variation_k, var2_tmp, Pn_2_tmp, n_cycle_mk(l_or_a,1)] = find_peaks(t_mk, y_mk, data_type, degree, num, gap, gap_k, var2_tmp, Pn_2_tmp, Rn_tmp, n_cycle_mk(l_or_a,1));
             
             % Update output elements
             for j=1:(kalman_fill'*k_length)
