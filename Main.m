@@ -51,8 +51,12 @@ while not(bagFile.LastTimeDone())
     for i=1:n_sensor
         %% Picchi e dati per IsolationForest
             % Picchi
-            [already_analyzed, anomaly_out, index_out, variation, y_calc, data_type, kalman_ok] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_k, kalman_ok);
-            n_analysed(j,i) = length(anomaly_out{1}) - already_analyzed;
+            if not(isempty(data{i,1}))
+                [already_analyzed, anomaly_out, index_out, variation, y_calc, data_type, kalman_ok] = FindPeaksWrapper(data{i,2}, data{i,1}, data{i,3}(1), degree, num, gap, gap_k, kalman_ok);
+                n_analysed(j,i) = length(anomaly_out{1}) - already_analyzed;
+            else
+                already_analyzed = true;
+            end
         
         if not(already_analyzed)
             
@@ -60,7 +64,7 @@ while not(bagFile.LastTimeDone())
             
             for k=1:rows_data
             % Foresta
-                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, 0.7, data_type{k,1}, (variation{k})');
+                [ ~, forest_anomaly, position_anomaly, ~, s] = IsolationForest( numForest, numElementForest, numElementForest, 0.7, data_type{k,1}, (variation{k})');
             
             % Aggiornamento riscontro picchi
                 anomaly = anomaly.update(anomaly_out{k}, index_out(k), forest_anomaly, position_anomaly, data_type{k,1});
