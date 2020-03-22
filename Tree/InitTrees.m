@@ -12,7 +12,7 @@
 %	pow_tree		[tree]
 %		tree starting from power
 
-function [accel_tree, pos_tree, pow_tree] = InitTrees(debugLog)
+function [accel_tree, pos_tree, pow_tree general_tree] = InitTrees(debugLog)
 	accel_tree = tree('accel_tree');
 	[accel_tree a_ang] = accel_tree.addnode(1, 'a_ang');
 	[accel_tree a_lin] = accel_tree.addnode(1, 'a_lin');
@@ -35,10 +35,24 @@ function [accel_tree, pos_tree, pow_tree] = InitTrees(debugLog)
 	[pow_tree comp] = pow_tree.addnode(curr, 'compass');
 	[pow_tree mag_field] = pow_tree.addnode(comp, 'v_lin');
 
+	general_tree = tree('general_tree');
+	[general_tree entry_pt] = general_tree.addnode(1, 'entry_pt');
+	% insert Accel Tree
+	general_tree = general_tree.graft(entry_pt,accel_tree);
+	% a_t_index = GetNodeIndex(general_tree, 'accel_tree');
+	%insert Pos Tree
+	general_tree = general_tree.graft(entry_pt,pos_tree);
+	% a_t_index = GetNodeIndex(general_tree, 'accel_tree');
+	general_tree = general_tree.graft(entry_pt,pow_tree);
+	
+	
+	general_tree = general_tree.graft()
+
 	if (nargin > 0 && debugLog)
 		disp(accel_tree.tostring);
 		disp(pos_tree.tostring);
 		disp(pow_tree.tostring);
+		disp(general_tree.tostring);
 	end
 
 end
