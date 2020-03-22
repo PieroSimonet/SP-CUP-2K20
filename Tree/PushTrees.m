@@ -16,8 +16,8 @@ function [accel_tree, pos_tree, pow_tree] = PushTrees(currMsgImu, msgOdom, debug
 	end
 
 	m_accel_tree = PushGenericData(accel_tree_d, m_accel_tree, 'a_lin', currMsgImu.LinearAcceleration);
-	m_accel_tree = PushGenericData(accel_tree_d, m_accel_tree, 'a_lin', currMsgImu.LinearAcceleration);
-	m_accel_tree = PushGenericData(accel_tree_d, m_accel_tree, 'a_lin', currMsgImu.LinearAcceleration);
+	% m_accel_tree = PushGenericData(accel_tree_d, m_accel_tree, 'a_lin', currMsgImu.LinearAcceleration);
+	% m_accel_tree = PushGenericData(accel_tree_d, m_accel_tree, 'a_lin', currMsgImu.LinearAcceleration);
 
 
 
