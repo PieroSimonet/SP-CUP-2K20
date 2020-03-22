@@ -106,12 +106,13 @@ while not(bagFile.LastTimeDone())
 end
 
 % numero elementi analizzati ad ogni ciclo per ogni sensore
-n_analysed
+disp(n_analysed);
 % valore sensori
-new_values
+disp(new_values);
+
+disp("Total time = " + sum(new_values(:,7)));
 
 
-sum(new_values(:,7))
 %% Plot e controlli
 
 function tmp = plot_all(see,data)

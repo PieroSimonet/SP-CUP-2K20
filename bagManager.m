@@ -20,6 +20,7 @@ classdef bagManager
         PressureIndex
         TemperatureIndex
         GpsVelIndex
+        GpsPosIndex
         LastTimeDone
     end
     
@@ -43,6 +44,7 @@ classdef bagManager
             obj.PressureIndex = 1;
             obj.TemperatureIndex = 1;
             obj.GpsVelIndex = 1;
+            obj.GpsPosIndex = 1;
             obj.LastTimeDone = false;
             obj = obj.updateData();
         end
@@ -273,6 +275,32 @@ classdef bagManager
                        
             if haveUpdate
                 obj.AltitudineIndex = length(message);
+            end
+
+            
+            obj.MainIndex = obj.MainIndex + 1;
+
+            
+            %% extrapolation Global Position
+            bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/global_position/global');
+            message = readMessages(bagTmp,'DataFormat','struct');
+            t = bagTmp.MessageList.Time;
+            haveUpdate = false;
+
+           
+            for i=obj.GpsPosIndex:length(message)
+                obj.Data{obj.MainIndex,1}(1,i) = message{i}.Latitude;
+                obj.Data{obj.MainIndex,1}(1,i) = message{i}.Longitude;
+                haveUpdate = true; 
+            end
+            
+            % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+            obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+            % obj.Data{obj.MainIndex,3} - data_type
+            obj.Data{obj.MainIndex,3} = "p_gps";                
+                    
+            if haveUpdate
+                obj.GpsPosIndex = length(message);
             end
 
             

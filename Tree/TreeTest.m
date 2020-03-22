@@ -17,4 +17,4 @@ tm = tm.SetNameMap(map);
 % tm.disp();
 
 tm = tm.PushData(data);
-%tm.disp();
+tm.disp();
