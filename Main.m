@@ -78,11 +78,11 @@ while not(bagFile.LastTimeDone())
     
     %% ANALISI ALBERI DI CHECK
     if ~isempty(anomaly.peaks)
-        treesManager.SearchTree();
+       % treesManager.SearchTree();
     end
     
     if ~isempty(anomaly.forest)
-        treesManager.SearchTree();
+       % treesManager.SearchTree();
     end
     
     % reset picchi
