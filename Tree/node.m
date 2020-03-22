@@ -5,6 +5,7 @@ classdef node
 		name
 		time
 		data
+		anomalyPeakIndex
 	end
 
 	methods
@@ -28,6 +29,11 @@ classdef node
 		function obj = PushData(obj, time, data)
 			obj.time = [ obj.time time];
 			obj.data = [ obj.data data];
+		end
+
+		% Push anomaly data into the node
+		function obj = SetAnomalyPeakIndex(obj, index)
+			obj.anomalyPeakIndex = index;
 		end
 	end
 end

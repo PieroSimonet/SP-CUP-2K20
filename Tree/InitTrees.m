@@ -33,8 +33,9 @@ function [accel_tree, pos_tree, pow_tree general_tree] = InitTrees(debugLog)
 	[pow_tree curr] = pow_tree.addnode(pow, node('current'));
 	[pow_tree curr] = pow_tree.addnode(pow, node('voltage'));
 	[pow_tree batt] = pow_tree.addnode(pow, node('battery'));
+	[pow_tree temp] = pow_tree.addnode(pow, node('temperature'));
 	[pow_tree comp] = pow_tree.addnode(curr, node('compass'));
-	[pow_tree mag_field] = pow_tree.addnode(comp, node('v_lin'));
+	[pow_tree mag_field] = pow_tree.addnode(comp, node('mag_field'));
 
 	general_tree = tree('general_tree');
 	[general_tree entry_pt] = general_tree.addnode(1, 'entry_pt');

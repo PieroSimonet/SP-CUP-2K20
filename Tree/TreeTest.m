@@ -14,7 +14,7 @@ map('Pos') = 'p_local';
 
 tm = TreesManager();
 tm = tm.SetNameMap(map);
-% tm.disp();
+tm.disp();
 
 tm = tm.PushData(data);
 tm.disp();

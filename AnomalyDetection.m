@@ -11,7 +11,7 @@ classdef AnomalyDetection
         
         % Constructor
         function anomaly = AnomalyDetection()
-            anomaly.peaks = {};
+            anomaly.peaks = []
             anomaly.index_peaks = 0;
             anomaly.forest = {};
             anomaly.index_forest = 0;
@@ -20,8 +20,10 @@ classdef AnomalyDetection
         % Insert
         function anomaly = insert_peaks(anomaly, index_anomaly, data_type)
             anomaly.index_peaks = anomaly.index_peaks + 1;
-            anomaly.peaks{anomaly.index_peaks,1} = index_anomaly;
-            anomaly.peaks{anomaly.index_peaks,2} = data_type;
+            for i=1:length(index_anomaly)
+                anomaly.peaks{anomaly.index_peaks,1} = index_anomaly(i);
+                anomaly.peaks{anomaly.index_peaks,2} = data_type;
+            end
         end
         
         function anomaly = insert_forest(anomaly, index_anomaly, data_type)
