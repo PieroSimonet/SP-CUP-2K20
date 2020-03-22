@@ -41,10 +41,18 @@ classdef TreesManager
 			
 		end
 
-		function node = SearchTree(iterator,search_handler)
+		function trees = PushTrees(data)
+			
+		end
+
+		function node = SearchTree(tree,iterator,search_handler)
 			for i = iterator
-				% if(search_handler())
-                % end
+				% get current node
+				node = tree.get(i);
+				%skip if empty
+				if isempty(node) continue; end
+				%apply search handler
+				if search_handler(node) return node; end
 			end
 		end
 		
