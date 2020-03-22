@@ -82,10 +82,13 @@ while not(bagFile.LastTimeDone())
     
     %% ANALISI ALBERI DI CHECK
     if ~isempty(anomaly.peaks)
-       % treesManager.SearchTree();
+        % anomaly_out{1}(end) -> in cui da un vettore che non ho analizzato lo da tutto 
+       treesManager.PushData(data);
+        treesManager.SearchTree(@peaksWrapper);
     end
     
     if ~isempty(anomaly.forest)
+       %treesManager.PushData(data);
        % treesManager.SearchTree();
     end
     
@@ -173,4 +176,15 @@ function see_new = update(see, anomaly, variation, y_calc, data_type)
     
     see_new = see;
     
+end
+
+
+function anom = peaksWrapper(node)
+
+    t = node.t;
+    y = node.data;
+    typ = node.name;
+    [~ anom ~ ~ ~ ~ ~ ] = FindPeaksWrapper(t,y,typ,0,0,0,0,0);
+
+    return anom;
 end

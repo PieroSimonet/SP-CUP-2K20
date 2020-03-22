@@ -28,6 +28,7 @@
 %                     {i,2} dimension of values of corresponding sensor     [int]
 % kalman_ok         - update of input
 
+%                          | to see |                                                                                        | pos rot acc |-> all zeros
 %% Function
 function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type, kalman_ok] = FindPeaksWrapper(t, y, type, degree, num, gap, gap_k, kalman_ok)
     

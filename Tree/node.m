@@ -25,9 +25,9 @@ classdef node
 		end
 		
 		% Push new Data into the node
-		function obj = pushData(obj, time,data)
+		function obj = PushData(obj, time, data)
 			obj.time = [ obj.time time];
-			obj.time = [ obj.data data];
+			obj.data = [ obj.data data];
 		end
 	end
 end
