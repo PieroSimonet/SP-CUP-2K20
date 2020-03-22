@@ -37,7 +37,7 @@ function [accel_tree, pos_tree, pow_tree] = InitTrees(debugLog)
 
 	if (nargin > 0 && debugLog)
 		disp(accel_tree.tostring);
-		disp(pow_tree.tostring);
+		disp(pos_tree.tostring);
 		disp(pow_tree.tostring);
 	end
 
