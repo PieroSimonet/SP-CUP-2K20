@@ -59,25 +59,37 @@ function kalman_ok = multi_kalman_ok(data, num, kalman_ok)
     % Data acquisistion and eleaboration
     for i=1:rows_data
         tmp = id_kalman==data{i,3};
-        k_index(tmp) = i;
-        T_index(tmp) = data{i,2}(:,end);
-        l_index(tmp) = length(data{i,2})-last_length(tmp);
-        last_length(tmp) = length(data{i,2});
+        if sum(sum(tmp))
+            k_index(tmp) = i;
+            T_index(tmp) = data{i,2}(:,end);
+            l_index(tmp) = length(data{i,2})-last_length(tmp);
+            last_length(tmp) = length(data{i,2});
         
-        % Avoid division by zero
-        if data{i,2}(:,end)== 0 && data{i,2}(:,1)==0
-            kalman_ok = zeros(size(kalman_ok));
-            return
+            % Avoid division by zero
+            if data{i,2}(:,end)== 0 && data{i,2}(:,1)==0
+                kalman_ok = zeros(size(kalman_ok));
+                return
+            end
+            F_index(tmp) = length(data{i,2})/(data{i,2}(:,end)-data{i,2}(:,1));
+        else
+            % No match
+            k_index(tmp) = i;
+            T_index(tmp) = 0;
+            l_index(tmp) = 0;
+            last_length(tmp) = 0;
+            F_index(tmp) = 0;
         end
-            
-        F_index(tmp) = length(data{i,2})/(data{i,2}(:,end)-data{i,2}(:,1));
     end
     
     for j=1:2 
         for i=1:length(k_index(j,:))-1
             if k_index(j,i)~=0 && k_index(j,i+1)~=0
                 % Two contiguous element exist
-                test1 = abs(T_index(j,i)-T_index(j,i+1))<=abs(n_elem_permitted/min(F_index(j,i),F_index(j,i+1)));
+                if min(F_index(j,i),F_index(j,i+1))==0
+                    test1 = abs(T_index(j,i)-T_index(j,i+1))<=abs(n_elem_permitted/min(F_index(j,i),F_index(j,i+1)));
+                else
+                    test1 = false;
+                end
                 test2 = abs(F_index(j,i)-F_index(j,i+1))<= min(F_index(j,i),F_index(j,i+1))/num;
                 check_nk(j,i) = (test1&&test2)||check_nk(j,i);
                 check_nk(j,i+1) = (test1&&test2);
