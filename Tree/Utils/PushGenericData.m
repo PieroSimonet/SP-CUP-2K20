@@ -1,4 +1,3 @@
-
 function tree = PushGenericData(desc_tree, tree, fieldName, data)
 	
 	persistent map
@@ -6,9 +5,10 @@ function tree = PushGenericData(desc_tree, tree, fieldName, data)
 		map = containers.Map;
 	end
 	
-	if(isempty(map(fieldName)))
+	if isempty(map(fieldName))
 		map(fieldName) = GetNodeIndex(desc_tree,fieldName);
-		
+	end
+
 	index = map(fieldName);
 
 	if isempty(tree.get(index));

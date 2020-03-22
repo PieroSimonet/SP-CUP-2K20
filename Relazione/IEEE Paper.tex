@@ -29,7 +29,7 @@ It involves four main steps: peaks and abnormalities during data acquisition sae
 
 First and second steps take place at the same time during program flow but they serch autonomously the anomaly.
 Peaks serch is implemented with the use of polyfit and Kalman evaluation, for prediction of the measures and 
-alculation of the percentual change. Instead abnormalities during data acquisistion uses a modified version
+calculation of the percentual change. Instead abnormalities during data acquisistion uses a modified version
 of the isolation forest to verify if during the measures are occurred discrepancies.
 
 The third part leverages of the concept that if every sensor in the autonomous system reports an anomaly, it means that
@@ -77,9 +77,8 @@ The covariance matrix of the measures (\(Q\)) is set by diagonalize \(var2\) (th
 The sensor precision matrix \(Rn\) is constant (elment 0.1 diagonal matrix) to to allow evaluation even in critical cases (behavior not completely constant).
 
 \subsection{Peaks Presence}
-The peak presence is verified by calculating if the percentage of change between values expected and measured exceeds delta \([\%]\).
-The value of delta is the maximum between a value (gap) and the average percentage change of previous check. This maximization is necessary because if signal noise is very loud, the function avoids reporting every measures as anomaly.
-\\ Inaddition the value of gap, given by input of \(FindPeaksWrapper\) function, is modified inside \(peak\_presence\) function. This change is due to the fact that if the values approach zero, small variations generate a high percentage change. 
+The peak presence is verified by calculating if the percentage of change between values expected and measured exceeds gap \([\%]\).
+\\ The value of gap, given by input of \(FindPeaksWrapper\) function, is modified inside \(peak\_presence\) function. This change is due to the fact that if the values approach zero, small variations generate a high percentage change. 
 
 \subsection{Internal variables update}
 Inside \(FindPeaksWrapper()\) there are few variables that are used both as input and as output (updated in every cycle). The most important and noteworthy is var2.
