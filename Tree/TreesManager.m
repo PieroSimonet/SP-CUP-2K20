@@ -12,6 +12,8 @@ classdef TreesManager
 		accel_iterator;
 		pos_iterator;
 		pow_iterator;
+
+		GeneralTree;
 	end
 
 	methods
@@ -22,9 +24,9 @@ classdef TreesManager
 		%		Tells wether or not print trees to console after creation
 		function obj = TreesManager(debugLog)
 			if(nargin == 0)
-				[ obj.AccelTree_desc, obj.PosTree_desc, obj.PowTree_desc] = InitTrees()
+				[ obj.AccelTree_desc, obj.PosTree_desc, obj.PowTree_desc obj.GeneralTree] = InitTrees()
 			else
-				[ obj.AccelTree_desc, obj.PosTree_desc, obj.PowTree_desc] = InitTrees(debugLog)
+				[ obj.AccelTree_desc, obj.PosTree_desc, obj.PowTree_des obj.GeneralTreec] = InitTrees(debugLog)
 			end
 
 			obj.AccelTree_data = tree(obj.AccelTree_desc, 'clear');
@@ -34,6 +36,14 @@ classdef TreesManager
 			obj.accel_iterator = AccelTree_desc.breadthfirstiterator;
 			obj.pos_iterator = PosTree_data.breadthfirstiterator;
 			obj.pow_iterator = PowTree_data.breadthfirstiterator;
+
+			
+		end
+
+		function node = SearchTree(iterator,search_handler)
+			for i = iterator
+				if(search_handler())
+			end
 		end
 		
 		% Reset all the data trees
