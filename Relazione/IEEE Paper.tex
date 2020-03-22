@@ -46,41 +46,44 @@ Abnormalities detection, peaks search, Kalman filter, isoaltion forest, tree str
 
 \section{Introduction}
 
-\IEEEPARstart{}
-{To do}
-\\(Descrizione dettagliata flow del programma, associata al flow diagram)
+\IEEEPARstart
+{T}O DO
+\\\\(Descrizione dettagliata flow del programma, associata al flow diagram)
 
 \section{Peaks search: FindPeaksWrapper}
 
 \(FindPeaksWrapper(\cdots)\) is used to find noticeable variation in the sensors data flow.
-The program can be divided in four main elements: polyfit, Kalman filter, peak presence
-and variables update.
+The program can be divided in four main elements: polyfit, Kalman filter, peak presence, variables update.
 
 \subsection{Polyfit}
-For each sensor, for each new data acquisition the variation between the measure and the prediction
-is checked by \(polyfit(\cdots)\) function (it uses \(polyfit(\cdots )\) and \(polyval(\cdots )\) Matlab functions).
+For each sensor, for each new data acquisition, \(poly\_fit\) function predicts the next values , based on data already captured (it uses \(polyfit\) and \(polyval\) Matlab functions).
 This evaluation is done only if the number of elements to analyse is greater than degree of polyfit
 evaluation plus three (in the program degree plus three). This restriction is caused by the necessity
-of the presence of one element to verify and of degree plus two elements for \(polyfit(\cdots)\)
-(plus two and not one because so the parametric estimation has al least a degree of freedom).
+of the presence of one element to verify and of two more elements for \(polyfit\), so the parametric estimation has at least one degree of freedom.
 
 \subsection{Kalman Filter}
-The Kalman filter is used only when the cosidered data is space, velocity and acceleration (angular or linear) and the acceleration is almost constant.
-The Kalman filter needs the state transition matrix to be built (obtained from the differential equations of the model). In this case the model is a black box model thus it can't be described exactly. For these reasons the Kalman filter is used only on space, velocity and acceleration with uniform acceleration.
-The Kalman filter is used anyway because if the autonomous system makes continuous and without variations paths/movements, it will generate a more accurate evaluation than \(polyfit\).
-The filter is activated by the evaluation of slope of regression line (the coefficient is generated inside \(polyfit\) function).
-The covariance matrix (\(Pn\_\cdots \)) is initialized as \(10\)\hspace{1mm}\(eye(\cdots)\) and update during subsequent cycles.
-The covariance matrix of the measures (\(Q\)) is set by \(var2\_error\) vector placed diagonally (the motivation of these setting is explained in the next sections).
+The Kalman filter is used in two cases : individually on the sensor if it has no correlation with others or for a multi-sensor Kalman filter evaluation. In both cases the filter is activated by the evaluation of slope of the regression line (the coefficient is generated inside \(polyfit\) function). 
+The Kalman filter needs the state transition matrix to be built (obtained from the differential equations of the model). In this case the model is a black box model thus it can't be described exactly. For these reason, the Kalman filter is used only if the slope is near zero (constant behaviour).
+\\The corresponding transition matrix evaluates a constant behaviour if the sensor has no correlation with other sensors.
+\\For multi-Kalman filter evaluation insted, the sensors used are spece, velocity and acceleration (linear or angular), collected inside \(id\_kalman\) variable. 
+In these case, the state transition matrix describes a uniformily acceleration motion. This specific evaluation uses also \(kalman_ok\) variable.
+\\ \(kalman\_ok\) is generated previously by the \(multi_kalman_ok\) function. Due to the possible time desynchronization, the function estimates time compatibility of specific sensors to permit greater accuracy of Kalman's filter.
+\\
+The Kalman filter is used anyway because if the autonomous system makes continuous and without variations paths/movements, it will generate a more accurate evaluation than \(poly_fit\).
+This method needs also process covariance matrix (\(Pn\)), measure covariance matrix (\(Q\)) and sensor precision matrix (\(Rn\)).
+All the matrix are composed by the all matrices are a composition of the respective individual matrices of the sensors, using the internal \(diagonalizer\) function.
+The process covariance matrix \(Pn\) is updated in each cycle of Kalman evaluation and and restore to initial condition (element 2 diagonal matrix) if Kalman filter evaluation is no longer possible.
+The covariance matrix of the measures (\(Q\)) is set by diagonalize \(var2\) (the motivation of these setting is explained in next sections).
+The sensor precision matrix \(Rn\) is constant (elment 0.1 diagonal matrix) to to allow evaluation even in critical cases (behavior not completely constant).
 
 \subsection{Peaks Presence}
 The peak presence is verified by calculating if the percentage of change between values expected and measured exceeds delta \([\%]\).
-The value of delta is the maximum between a pre-set value (gap), the average percentage change of previous check and percentage error change of polyfit evaluation. This check is necessary because if signal noise is very loud, the function avoids reporting every measures as anomaly.
+The value of delta is the maximum between a value (gap) and the average percentage change of previous check. This maximization is necessary because if signal noise is very loud, the function avoids reporting every measures as anomaly.
+\\ Inaddition the value of gap, given by input of \(FindPeaksWrapper\) function, is modified inside \(peak\_presence\) function. This change is due to the fact that if the values approach zero, small variations generate a high percentage change. 
 
 \subsection{Internal variables update}
-Inside \(FindPeaksWrapper()\) there are three values (for each type of signal) that are used both as input and as output (\(Pn\_2, varp\_error, var2\_error\)) because in each cycle they are updated.
-\(Pn\_2\) is necessary for Kalman filter evaluation and in each cycle it is updated whitin the function itself.
-\(varp\_error\) is average percentage change between measure and prediction (error) (related to prediction).
-\(var2\_error\) is average squared change between measure and prediction (error) and it is used in the covariance matrix of the measure.
+Inside \(FindPeaksWrapper()\) there are few variables that are used both as input and as output (updated in every cycle). The most important and noteworthy is var2.
+\\\(var2\) is average squared change between measure and prediction and it is used in the covariance matrix of the measure.
 It is used as covariance matrix of the measure because assuming the noises as gaussian noises (processes is subjected to ambient, thermal and internal noise)
 \begin{displaymath}
     y_{measure} = y_{real} + e_{measure}  \quad  e_{measure}  \sim  N(0, \Sigma_{measure})
@@ -111,25 +114,30 @@ Unidimensional estimation of variance
 \end{displaymath}
 
 \subsection{Input \- Output}
+In \(FindPeaksWrapper\) most of elements are cell{} element due to the different vector dimension and varyables used.
 Detailed specification in \(FindPeaksWrapper(\cdots)\)
 \\
 \(Input\)
 \begin{itemize}
-\item t \(-\) time vector 
-\item y \(-\) vector of values of data\_type element
-\item data\_type \(-\) type of data
-\item degree \(-\) max degree during poly fit evaluation
-\item num \(-\) number of elements evaluating during polyfit
-\item ap \(-\) maximum permissible percentage error
-\item gap\_sva \(-\) max variation to identify a constant element
+\item t: time vector of sensors
+\item y: sensors measurement vectors
+\item type: type of sensor 
+\item num: maximum number of elements used in polyfit evaluation
+\item gap: minimum percentage variation to report an anomaly
+\item gap\_k: maximum coefficient of linear regression to determine constant behaviour
+\item kalman\_ok: data matrix that activates multi-Kalman evaluation
 \end{itemize}
+
 
 \(Output\)
 \begin{itemize}
-\item already\_analysed \(-\) true if all values of the corresponding data\_type are already analysed
-\item anomaly \(-\) vector of all the anomaly of the corresponding data\_type
-\item error \(-\) error of the last element (\(y_{measured}-y_{predicted}\))
-\item y\_next \(-\) prediction of the last element
+\item already\_analysed: no new elements to analyse
+\item anomaly\_out: anomalies in the last captured data set
+\item index\_out: index of the first element in anomaly\_out referred to all measured data
+\item variation: differences between predicted and measured values
+\item y\_calc: output vector of the predicted values
+\item data\_type: general description of evaluated sensors
+\item kalman\_ok: update of input
 \end{itemize}
 
 
@@ -178,6 +186,7 @@ The main disadvantage of Isolation Forest is Swamping. Swamping is when normal i
 \item sk: Anomaly threshold 
 \item type: Type of the new element 
 \item newEl: New point of the forest 
+\item numLastPoints: Number of last points to use in the forest
 \end{itemize}
 
 \subsection{Output}
@@ -211,6 +220,9 @@ This part contains classes and functions to structure data in a prioritized way,
 to avoid unnecessary controls over sensor that are less likely to give data representing a true anomaly
 
 \section{System Values Update}
+The intantion is to build a real time program. To do this, the Bag manager has to adjust the reading time interval based on the time needed for the previous cicle.
+For this reason, keeping the time of a balanced cicle is extremely crucial, so that t he function \(OptimizeParameter()\)
+keeps track of it and set the parameter of the various components based on the previous values and the variation of time that it's involved in all the program.
+The main idea is that if the program is fast enough, the algorithms can be even more precise otherwise they can be relaxed a bit.
 
-\subsection{To do}
 \end{document}

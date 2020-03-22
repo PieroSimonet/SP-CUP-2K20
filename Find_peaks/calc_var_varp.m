@@ -1,32 +1,32 @@
 %% Input
- 
-% error         - difference between prediction and measure             [double[]]
-% v_next_wz     - v_next with zero replaced with 1(Without Zero)        [double[]]
-% varp_error    - percentage change of error compared to prediction     [double[]]
-% var2_error    - average squared variation of error                    [double[]]
-%               - composed by noise and imprecision of polyval
- 
+
+% variation         - differences between predicted and measured values     [double[]]
+% y_next_wz         - predicted values vector (without zero elements)       [double[]] 
+% varp              - average percentage sensor variation                   [int double[]]
+% var2              - variance of sensor                                    [double[]]
+
 %% Output
- 
-% varp_error        - ...
-% varp_error_short  - varp_error without the first element (n)      [double[]]
-% var2_error        - ...
- 
+
+% varp              - update of input
+% varp_short        - varp without first element                            [double[]]
+% var2              - update of input
+
 %% Function
-function [varp_error, varp_error_short, var2_error] = calc_var_varp(error, v_next_wz, varp_error, var2_error)
+function [varp, varp_short, var2] = calc_var_varp(variation, y_next_wz, varp, var2)
     
     % n - computed element [int]
-    n = varp_error(1);
-    % average deletion
-    varp_error_short = n*varp_error(2:end);
-    var2_error = n*var2_error;
+    n = varp(1);
     
-    % update and average
+    % Average deletion
+    varp_short = n*varp(2:end);
+    var2 = n*var2;
+    
+    % Update variables and new averages
     n = n+1;
-    varp_error_short = (((varp_error_short + abs(error))./abs(v_next_wz)))./n;
-    var2_error = (var2_error + error.^2)./n;
+    varp_short = (varp_short + abs(variation)./abs(y_next_wz))./n;
+    var2 = (var2 + variation.^2)./n;
     
-    varp_error(1) = n;
-    varp_error(2:end) = varp_error_short;
+    varp(1) = n;
+    varp(2:end) = varp_short;
     
 end

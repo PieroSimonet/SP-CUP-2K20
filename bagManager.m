@@ -11,9 +11,12 @@ classdef bagManager
         MainIndex
         VoltageIndex
         OdomIndex
+        VelocityIndex
         AngularVelocityIndex
         LinearAccelerationIndex
+        TwistIndex
         StatusIndex
+        CurrentIndex
         LastTimeDone
     end
     
@@ -28,9 +31,12 @@ classdef bagManager
             obj.MainIndex = 1;
             obj.VoltageIndex = 0;
             obj.OdomIndex = 0;
+            obj.VelocityIndex = 0;
             obj.AngularVelocityIndex = 0;
             obj.LinearAccelerationIndex = 0;
             obj.StatusIndex = 0;
+            obj.TwistIndex = 0;
+            obj.CurrentIndex = 0;
             obj.LastTimeDone = false;
             obj = obj.updateData();
         end
@@ -70,15 +76,28 @@ classdef bagManager
                 obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "voltage";
+
+                obj.Data{obj.MainIndex + 1,1} = zeros(1,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex + 1,1}(i) = message{i}.Current;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex + 1 ,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex +1 ,3} = "Current";
+
+
                 haveUpdate = true;
             end
             % update numer of elements
             if haveUpdate
                 obj.VoltageIndex = length(message);
+                obj.CurrentIndex = length(message);
             end
             
             % new row for the next element to load
-            obj.MainIndex = obj.MainIndex + 1;
+            obj.MainIndex = obj.MainIndex + 2;
 
 
             %% extrapolation position
@@ -100,15 +119,57 @@ classdef bagManager
                 obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "Pos";                
-                haveUpdate = true;                
+                haveUpdate = true;        
+                
+                oldTime = 0;
+                % calculate the velocity
+                for i = 2:length(message)
+                    tmpTime = obj.Data{obj.MainIndex,2}(i) - obj.Data{obj.MainIndex,2}(i-1);
+                    obj.Data{obj.MainIndex + 1,1}(1,i - 1) = (obj.Data{obj.MainIndex,1}(1,i) - obj.Data{obj.MainIndex,1}(1,i-1))/tmpTime;
+                    obj.Data{obj.MainIndex + 1,1}(2,i - 1) = (obj.Data{obj.MainIndex,1}(2,i) - obj.Data{obj.MainIndex,1}(2,i-1))/tmpTime;
+                    obj.Data{obj.MainIndex + 1,1}(3,i - 1) = (obj.Data{obj.MainIndex,1}(3,i) - obj.Data{obj.MainIndex,1}(3,i-1))/tmpTime;
+                    tmpTime = oldTime + tmpTime;
+                    obj.Data{obj.MainIndex + 1 ,2}(i - 1) = tmpTime;
+                end
+
+                obj.Data{obj.MainIndex + 1,3} = "Vel";        
+
             end
             if haveUpdate
                 obj.OdomIndex = length(message);
+                obj.VelocityIndex = length(message) - 1 ;
             end
             
             % new row for the next element to load
-            obj.MainIndex = obj.MainIndex + 1;
+            obj.MainIndex = obj.MainIndex + 2;
 
+
+            % Twist
+            haveUpdate = false;
+            if obj.TwistIndex ~= length(message)
+
+                  
+                obj.Data{obj.MainIndex,1} = zeros(3,length(message));
+                for i=1:length(message)
+                    obj.Data{obj.MainIndex,1}(1,i) = message{i}.Twist.Twist.Linear.X;
+                    obj.Data{obj.MainIndex,1}(2,i) = message{i}.Twist.Twist.Linear.Y;
+                    obj.Data{obj.MainIndex,1}(3,i) = message{i}.Twist.Twist.Linear .Z;
+                end
+                
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex,3} = "Twi";      
+
+
+                haveUpdate = true;  
+            end
+            if haveUpdate
+                obj.TwistIndex = length(message);
+            end
+
+
+            obj.MainIndex = obj.MainIndex + 1;
             
             %% extrapolation angular velocity
             bagTmp = select(obj.BagFile, 'Time', [obj.StartTime obj.CurrentTime], 'Topic', '/mavros/imu/data');
