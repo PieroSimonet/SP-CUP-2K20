@@ -14,26 +14,27 @@
 
 function [accel_tree, pos_tree, pow_tree general_tree] = InitTrees(debugLog)
 	accel_tree = tree('accel_tree');
-	[accel_tree a_ang] = accel_tree.addnode(1, 'a_ang');
-	[accel_tree a_lin] = accel_tree.addnode(1, 'a_lin');
-	[accel_tree a_gps] = accel_tree.addnode(1, 'a_gps');
-	[accel_tree v_ang] = accel_tree.addnode(a_ang, 'a_ang');
-	[accel_tree v_lin] = accel_tree.addnode(a_lin, 'v_lin');
-	[accel_tree v_gps] = accel_tree.addnode(a_gps, 'v_gps');
+	[accel_tree a_ang] = accel_tree.addnode(1, node('a_ang'));
+	[accel_tree a_lin] = accel_tree.addnode(1, node('a_lin'));
+	[accel_tree a_gps] = accel_tree.addnode(1, node('a_gps'));
+	[accel_tree v_ang] = accel_tree.addnode(a_ang, node('v_ang'));
+	[accel_tree v_lin] = accel_tree.addnode(a_lin, node('v_lin'));
+	[accel_tree v_gps] = accel_tree.addnode(a_gps, node('v_gps'));
 
 	pos_tree = tree('pos_tree');
-	[pos_tree p_local] = pos_tree.addnode(1, 'p_local');
-	[pos_tree p_gps] = pos_tree.addnode(1, 'p_gps');
-	[pos_tree alt] = pos_tree.addnode(p_local, 'altitude');
-	[pos_tree press] = pos_tree.addnode(alt, 'pressure');
-	[pos_tree n_sat] = pos_tree.addnode(alt, 'n_sat');
+	[pos_tree p_local] = pos_tree.addnode(1, node('p_local'));
+	[pos_tree p_gps] = pos_tree.addnode(1, node('p_gps'));
+	[pos_tree alt] = pos_tree.addnode(p_local, node('altitude'));
+	[pos_tree press] = pos_tree.addnode(alt, node('pressure'));
+	[pos_tree n_sat] = pos_tree.addnode(alt, node('n_sat'));
 
 	pow_tree = tree('pow_tree');
-	[pow_tree pow] = pow_tree.addnode(1, 'power');
-	[pow_tree curr] = pow_tree.addnode(pow, 'current');
-	[pow_tree batt] = pow_tree.addnode(pow, 'battery');
-	[pow_tree comp] = pow_tree.addnode(curr, 'compass');
-	[pow_tree mag_field] = pow_tree.addnode(comp, 'v_lin');
+	[pow_tree pow] = pow_tree.addnode(1, node('power'));
+	[pow_tree curr] = pow_tree.addnode(pow, node('current'));
+	[pow_tree curr] = pow_tree.addnode(pow, node('voltage'));
+	[pow_tree batt] = pow_tree.addnode(pow, node('battery'));
+	[pow_tree comp] = pow_tree.addnode(curr, node('compass'));
+	[pow_tree mag_field] = pow_tree.addnode(comp, node('v_lin'));
 
 	general_tree = tree('general_tree');
 	[general_tree entry_pt] = general_tree.addnode(1, 'entry_pt');
