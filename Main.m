@@ -22,6 +22,7 @@ run InizializeNameOfFiles.m;
 bagFile = bagManager(file3);
 anomaly = AnomalyDetection();
 kalman_ok = zeros(2,4);
+treesManager = TreesManager();
 
 %% Vettori per i test
 
@@ -76,10 +77,12 @@ while not(bagFile.LastTimeDone())
     j = j+1;
     
     %% ANALISI ALBERI DI CHECK
-    if ~isempty(anomaly.peaks)        
+    if ~isempty(anomaly.peaks)
+        treesManager.SearchTree();
     end
     
-    if ~isempty(anomaly.forest)        
+    if ~isempty(anomaly.forest)
+        treesManager.SearchTree();
     end
     
     % reset picchi
