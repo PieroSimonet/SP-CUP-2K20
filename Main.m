@@ -209,15 +209,23 @@ end
 
 %% Helper methods
 function anom = peaksWrapper(node)
-
-    typ = node.name;
+    
+    % serve una String con il nome generale
+    typ = convertCharsToStrings(node.name);
     anom = false;
 
     y = node.data(1:node.anomalyPeakIndex);
-    t = node.t(1:node.anomalyPeakIndex);
+    t = node.time(1:node.anomalyPeakIndex);
+    
+    % da passare come parametri
+    degree = 2;
+    num = 10;
+    gap = 0.3;
+    gap_k = 0.1;
+    
     [~, anom, ~, ~, ~, ~, ~] = FindPeaksWrapper(t, y, typ, degree, num, gap, gap_k, zeros(2, 4));
 
-    if (~anom)
+    if ~anom{1}(end)
         return;
     end
 

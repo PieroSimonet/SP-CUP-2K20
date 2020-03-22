@@ -144,8 +144,8 @@ function [already_analysed, anomaly_out, index_out, variation, y_calc, data_type
     %             analysis
     %             (1,:) linear sensors
     %             (2,:) angular sensors
-    id_kalman = ["space", "velocity", "acceleration";
-                 "angle", "angularVelocity", "angularAcceleration"]; %-------------------------------------
+    id_kalman = ["p_gps", "v_gps", "LinearAcceleration";
+                 "angle", "AngularVelocity", "angularAcceleration"]; %-------------------------------------
              
     
     k_index(id_kalman==type) = index;

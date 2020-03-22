@@ -25,8 +25,8 @@ function kalman_ok = multi_kalman_ok(data, num, kalman_ok)
     %             analysis
     %             (1,:) linear sensors
     %             (2,:) angular sensors
-    id_kalman = ["space", "velocity", "acceleration";
-                 "angle", "angularVelocity", "angularAcceleration"]; %-------------------------------------
+    id_kalman = ["p_gps", "v_gps", "LinearAcceleration";
+                 "angle", "AngularVelocity", "angularAcceleration"];%---------------------------
     
     % n_elem_permitted - number of element permitted to report data synchronization [int]
     n_elem_permitted = 2;
