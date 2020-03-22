@@ -68,8 +68,12 @@ classdef bagManager
             if obj.VoltageIndex ~= length(message)
                 
                 obj.Data{obj.MainIndex,1} = zeros(1,length(message));
+                obj.Data{obj.MainIndex + 1,1} = zeros(1,length(message));
+                obj.Data{obj.MainIndex + 2,1} = zeros(1,length(message));
                 for i=1:length(message)
                     obj.Data{obj.MainIndex,1}(i) = message{i}.Voltage;
+                    obj.Data{obj.MainIndex + 1,1}(i) = message{i}.Current;
+                    obj.Data{obj.MainIndex + 2,1}(i) = message{i}.Current * message{i}.Voltage;
                 end
                 
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
@@ -77,15 +81,16 @@ classdef bagManager
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex,3} = "voltage";
 
-                obj.Data{obj.MainIndex + 1,1} = zeros(1,length(message));
-                for i=1:length(message)
-                    obj.Data{obj.MainIndex + 1,1}(i) = message{i}.Current;
-                end
-                
+                                
                 % obj.Dat{obj.MainIndex,2} - time vector (row vector)
                 obj.Data{obj.MainIndex + 1 ,2} = t'-obj.StartTime;
                 % obj.Data{obj.MainIndex,3} - data_type
                 obj.Data{obj.MainIndex +1 ,3} = "Current";
+
+                % obj.Dat{obj.MainIndex,2} - time vector (row vector)
+                obj.Data{obj.MainIndex + 2 ,2} = t'-obj.StartTime;
+                % obj.Data{obj.MainIndex,3} - data_type
+                obj.Data{obj.MainIndex + 2,3} = "Power";
 
 
                 haveUpdate = true;
