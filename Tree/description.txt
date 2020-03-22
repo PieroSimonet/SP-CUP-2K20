@@ -1,2 +1,3 @@
 This part contains classes and functions to structure data in a prioritized way, 
 to avoid unnecessary controls over sensor that are less likely to give data representing a true anomaly
+Base class taken from https://github.com/tinevez/matlab-tree
