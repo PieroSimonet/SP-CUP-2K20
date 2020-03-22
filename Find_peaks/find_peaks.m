@@ -11,8 +11,7 @@
 % gap               - minimum percentage variation to report an anomaly     [double]
 % gap_k             - maximum coefficient of linear regression to           [double]
 %                     determine constant behaviour
-% varp              - average percentage sensors variation                  [cell{int double[]}]
-% var2              - variance of sensors                                   [cell{double[]}]
+% var2              - average squared variance of sensors                   [cell{double[]}]
 % Pn_1              - covariance matrix of previous process                 [cell{double[]}]
 % Rn                - precision matrix of sensors                           [cell{double[]}]
 % n_cycle_k         - number of consecutive cycle of Kalman evaluation      [int]
@@ -22,13 +21,12 @@
 % anomaly           - anomalies in the last captured data set               [cell{Boolean[]}]
 % y_calc            - output vector of the predicted values                 [cell{double[]}]
 % variation         - differences between predicted and measured values     [cell{double[]}]
-% varp              - update of input
 % var2              - update of input
 % Pn_2              - update of input
 % n_cycle_k         - update of input
 
 %% Function
-function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(t, y, data_type, degree, num, gap, gap_k, varp, var2, Pn_1, Rn, n_cycle_k)
+function [anomaly, y_calc, variation, var2, Pn_2, n_cycle_k] = find_peaks(t, y, data_type, degree, num, gap, gap_k, var2, Pn_1, Rn, n_cycle_k)
     %% Initialization and sensors check
     
     % Support variables
@@ -106,6 +104,9 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(
         t_kalman(n_sensors) = 0;
         % y_kalman - sensor measurament vector used by Kalman evaluation    [double[]]
         y_kalman = zeros(sum(rows),2);
+        % var2_short - varp without first element                           [cell{double[]}]
+        %              number of elements analized)
+        var_short{n_sensors} = [];
         
         % Support variable to match different dimension elements
         j = 1;
@@ -113,10 +114,11 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(
             t_kalman(i) = t_analyse{i}(:,end)-t_analyse{i}(:,end-1);
             y_kalman(j:j+rows(i)-1,:) = y_analyse{i}(:,end-2:end-1);
             j = j+rows(i);
+            var_short{i} = var2{i}(2:end);
         end
         
         % Q - covariance matrix of measures                                 [double[]]
-        Q = diagonalizer(var2);
+        Q = diagonalizer(var_short);
         
         % Kalman evaluation
         % y_next_tmp - predicted values vector by Kalman evaluation         [double[]]
@@ -141,7 +143,7 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(
         end
         
         % anomaly_k - anomalies identified by Kalman evaluation             [cell{Boolean[]}]
-        [anomaly_k, ~, ~] = peak_presence(variation_k, y_next_k, y_last, gap, n_sensors);
+        [anomaly_k, ~,] = peak_presence(variation_k, y_next_k, y_last, gap, n_sensors);
         
     else
         % No near constant behaviour
@@ -154,20 +156,22 @@ function [anomaly, y_calc, variation, varp, var2, Pn_2, n_cycle_k] = find_peaks(
     end
     
     % anomaly_p - anomalies identified by polyfit evaluation                [cell{Boolean[]}]
-    % varp_tmp - update of input
     % var2_tmp - update of input
-    [anomaly_p, varp_tmp, var2_tmp] = peak_presence(variation_p, y_next_p, y_last, gap, n_sensors, varp, var2);    
+    [anomaly_p, var2_tmp] = peak_presence(variation_p, y_next_p, y_last, gap, n_sensors, var2);    
     
     % Update variables and comparison of the results
     for i=1:n_sensors
-        varp{analyse(i)} = varp_tmp{i};
         var2{analyse(i)} = var2_tmp{i};
         
         if n_cycle_k>3
             % Good Kalman evaluation
-            anomaly{analyse(i)} = anomaly_p{i} | anomaly_k{i};
             % which - which evaluation is the most efficient                [Boolean[]]
             which = (abs(variation_p{i})<abs(variation_k{i}));
+            if sum(which) > sum(1-which)
+                anomaly{analyse(i)} = anomaly_p{i};
+            else
+                anomaly{analyse(i)} = anomaly_k{i};
+            end
             variation{analyse(i)} = which.*variation_p{i}+(1-which).*variation_k{i};
             y_calc{analyse(i)} = which.*y_next_p{i}+(1-which).*y_next_k{i};
         else
