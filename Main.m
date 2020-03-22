@@ -82,8 +82,8 @@ while not(bagFile.LastTimeDone())
     %% ANALISI ALBERI DI CHECK
     if ~isempty(anomaly.peaks)
         % anomaly_out{1}(end) -> in cui da un vettore che non ho analizzato lo da tutto 
-       treesManager.PushData(data);
-        treesManager.SearchTree(@peaksWrapper);
+       %treesManager.PushData(data);
+       %treesManager.SearchTree(@peaksWrapper);
     end
     
     if ~isempty(anomaly.forest)
